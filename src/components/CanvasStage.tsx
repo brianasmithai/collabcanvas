@@ -191,28 +191,16 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
   }, [rectangles]);
 
   // Create throttled transform update function
-  const throttledTransformUpdate = useRef<((node: any, rectId: string) => void) | null>(null);
+  const throttledTransformUpdate = useRef<((updates: Partial<Rect>, rectId: string) => void) | null>(null);
   
   if (!throttledTransformUpdate.current) {
-    throttledTransformUpdate.current = throttle(async (node: any, rectId: string) => {
-      // Apply the scale to width/height and reset scale to 1
-      const newWidth = node.width() * node.scaleX();
-      const newHeight = node.height() * node.scaleY();
-      
+    throttledTransformUpdate.current = throttle(async (updates: Partial<Rect>, rectId: string) => {
       try {
-        await updateRect(rectId, {
-          x: node.x(),
-          y: node.y(),
-          width: newWidth,
-          height: newHeight,
-          rotation: node.rotation(),
-          updatedAt: Date.now(),
-          updatedBy: currentUserId || 'local-user'
-        });
+        await updateRect(rectId, updates);
       } catch (err) {
         console.error('Failed to update rectangle transform:', err);
       }
-    }, 100); // Throttle to 10 updates per second
+    }, 50); // Throttle to 20 updates per second for smoother real-time sync
   }
 
   // Create throttled cursor update function
@@ -233,7 +221,38 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
   const lastWorldPosition = useRef<{ x: number; y: number } | null>(null);
   const isDragging = useRef<boolean>(false);
 
-  // Handle transformer changes (resize/rotate)
+  // Handle transformer changes during transform (real-time updates)
+  const handleTransform = useCallback(() => {
+    if (transformerRef.current && selectionIds.length > 0) {
+      const nodes = transformerRef.current.nodes();
+      
+      for (const node of nodes) {
+        const rectId = rectangles.find(rect => rectRefs.current[rect.id] === node)?.id;
+        if (rectId && throttledTransformUpdate.current) {
+          // Apply the scale to width/height and reset scale to 1
+          const newWidth = node.width() * node.scaleX();
+          const newHeight = node.height() * node.scaleY();
+          
+          // Use throttled update for real-time sync
+          throttledTransformUpdate.current({
+            x: node.x(),
+            y: node.y(),
+            width: newWidth,
+            height: newHeight,
+            rotation: node.rotation(),
+            updatedAt: Date.now(),
+            updatedBy: currentUserId || 'local-user'
+          }, rectId);
+          
+          // Reset the scale to 1 to prevent accumulation
+          node.scaleX(1);
+          node.scaleY(1);
+        }
+      }
+    }
+  }, [selectionIds, rectangles, currentUserId]);
+
+  // Handle transformer changes (resize/rotate) - final update
   const handleTransformEnd = useCallback(async () => {
     if (transformerRef.current && selectionIds.length > 0) {
       const nodes = transformerRef.current.nodes();
@@ -500,6 +519,7 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
               }
               return newBox;
             }}
+            onTransform={handleTransform}
             onTransformEnd={handleTransformEnd}
           />
         )}
