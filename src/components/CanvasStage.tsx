@@ -4,14 +4,16 @@ import { Stage, Layer, Transformer } from 'react-konva';
 import { useUIStore } from '../state/uiStore';
 import { getZoomFactor, screenToWorld } from '../utils/geometry';
 import { RectNode } from './RectNode';
+import { CursorLayer } from './CursorLayer';
 import type { Rect } from '../types';
 
 interface CanvasStageProps {
   width: number;
   height: number;
+  currentUserId?: string; // For cursor layer
 }
 
-export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height }) => {
+export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, currentUserId }) => {
   const stageRef = useRef<any>(null);
   const transformerRef = useRef<any>(null);
   const rectRefs = useRef<{ [key: string]: any }>({});
@@ -284,6 +286,9 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height }) => {
           />
         )}
       </Layer>
+      
+      {/* Cursor layer for remote users */}
+      <CursorLayer currentUserId={currentUserId} />
     </Stage>
   );
 };

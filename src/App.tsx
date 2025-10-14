@@ -2,12 +2,16 @@ import { useState, useEffect } from 'react'
 import './App.css'
 import { useUIStore } from './state/uiStore'
 import { CanvasStage } from './components/CanvasStage'
+import { PresenceList } from './components/PresenceList'
 
 function App() {
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 })
   
   // Consume UI store for compile-time sanity
   const { toolMode, viewport, selectionIds } = useUIStore()
+  
+  // TODO: Get current user ID from Firebase Auth when auth is implemented
+  const currentUserId = 'local-user' // Placeholder for now
   
   // Log store values to console for verification (remove in production)
   console.log('UI Store state:', { toolMode, viewport, selectionIds })
@@ -28,6 +32,7 @@ function App() {
 
   return (
     <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', backgroundColor: '#e0e0e0' }}>
+      {/* Debug info panel */}
       <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 1000, background: 'white', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}>
         <div><strong>Canvas Debug Info:</strong></div>
         <div>Canvas: {dimensions.width} x {dimensions.height}</div>
@@ -45,7 +50,18 @@ function App() {
           <div>• Press Delete/Backspace to delete selected</div>
         </div>
       </div>
-      <CanvasStage width={dimensions.width} height={dimensions.height} />
+      
+      {/* Presence list */}
+      <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 1000 }}>
+        <PresenceList currentUserId={currentUserId} />
+      </div>
+      
+      {/* Canvas stage */}
+      <CanvasStage 
+        width={dimensions.width} 
+        height={dimensions.height} 
+        currentUserId={currentUserId}
+      />
     </div>
   )
 }

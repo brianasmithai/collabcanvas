@@ -110,17 +110,17 @@ tests/
 ## PR 4 — Canvas Stage Shell (Konva)
 **Goal:** Stage/Layer scaffold with pan/zoom plumbing.
 
-- [ ] Implement `CanvasStage` with full‑viewport `Stage` + `Layer`  
+- [X] Implement `CanvasStage` with full‑viewport `Stage` + `Layer`  
   **Files:** `src/components/CanvasStage.tsx` (new)
-- [ ] Add **wheel zoom** and **drag‑to‑pan**; keep scale/position in `uiStore`  
+- [X] Add **wheel zoom** and **drag‑to‑pan**; keep scale/position in `uiStore`  
   **Files:** `src/components/CanvasStage.tsx` (edit), `src/state/uiStore.ts` (edit), `src/utils/geometry.ts` (new)
-- [ ] Mount `CanvasStage` in the app shell  
+- [X] Mount `CanvasStage` in the app shell  
   **Files:** `src/App.tsx` (edit)
 
 **Tests (bare‑bones):** Render smoke + geometry math.  
-- [ ] Add `CanvasStage.render.test.tsx` to ensure component mounts without Konva errors (jsdom)  
+- [X] Add `CanvasStage.render.test.tsx` to ensure component mounts without Konva errors (jsdom)  
   **Files:** `tests/CanvasStage.render.test.tsx` (new)
-- [ ] Add `geometry.test.ts` for simple helpers (e.g., clamp/normalize)  
+- [X] Add `geometry.test.ts` for simple helpers (e.g., clamp/normalize)  
   **Files:** `tests/geometry.test.ts` (new)
 
 ---
@@ -128,15 +128,15 @@ tests/
 ## PR 5 — Rectangle Node + Selection (Local)
 **Goal:** Render rectangles and select via click (local data).
 
-- [ ] Implement `RectNode` to render a single rectangle (`Rect` props)  
+- [X] Implement `RectNode` to render a single rectangle (`Rect` props)  
   **Files:** `src/components/RectNode.tsx` (new)
-- [ ] Temporary local array of rectangles; click‑to‑select; selected styling  
+- [X] Temporary local array of rectangles; click‑to‑select; selected styling  
   **Files:** `src/components/CanvasStage.tsx` (edit), `src/state/uiStore.ts` (edit)
-- [ ] Visual selection handles (Konva Transformer placeholder)  
+- [X] Visual selection handles (Konva Transformer placeholder)  
   **Files:** `src/components/CanvasStage.tsx` (edit), `src/components/RectNode.tsx` (edit)
 
 **Tests (bare‑bones):** Minimal behavior.  
-- [ ] Add `RectNode.behavior.test.tsx`: renders at x/y; selection toggles store on click  
+- [X] Add `RectNode.behavior.test.tsx`: renders at x/y; selection toggles store on click  
   **Files:** `tests/RectNode.behavior.test.tsx` (new)
 
 ---
@@ -144,19 +144,19 @@ tests/
 ## PR 6 — Create / Move / Resize / Rotate / Delete (Local)
 **Goal:** Local‑only transforms fully working.
 
-- [ ] Add action to **create** a rectangle (toolbar button or hotkey)  
+- [X] Add action to **create** a rectangle (toolbar button or hotkey)  
   **Files:** `src/App.tsx` (edit), `src/components/CanvasStage.tsx` (edit)
-- [ ] **Drag** to move rectangle (update local state)  
+- [X] **Drag** to move rectangle (update local state)  
   **Files:** `src/components/RectNode.tsx` (edit), `src/components/CanvasStage.tsx` (edit)
-- [ ] **Resize/Rotate** via `Transformer` bound to selected rect  
+- [X] **Resize/Rotate** via `Transformer` bound to selected rect  
   **Files:** `src/components/RectNode.tsx` (edit), `src/components/CanvasStage.tsx` (edit)
-- [ ] **Delete** with Delete/Backspace  
+- [X] **Delete** with Delete/Backspace  
   **Files:** `src/components/CanvasStage.tsx` (edit)
-- [ ] Normalize math (bounds, rotation)  
+- [X] Normalize math (bounds, rotation)  
   **Files:** `src/utils/geometry.ts` (edit)
 
 **Tests (bare‑bones):** Single interaction smoke.  
-- [ ] Extend `RectNode.behavior.test.tsx`: simulate drag start/end to assert handler calls (don’t assert Konva internals)  
+- [X] Extend `RectNode.behavior.test.tsx`: simulate drag start/end to assert handler calls (don’t assert Konva internals)  
   **Files:** `tests/RectNode.behavior.test.tsx` (edit)
 
 ---
@@ -164,17 +164,17 @@ tests/
 ## PR 7 — Presence & Cursors (RTDB)
 **Goal:** Real‑time presence and cursor rendering.
 
-- [ ] `presence.ts`: set/update presence; `onDisconnect()` cleanup  
+- [X] `presence.ts`: set/update presence; `onDisconnect()` cleanup  
   **Files:** `src/services/presence.ts` (new)
-- [ ] `usePresence`: subscribe to `/presence/*`; return map of users by `uid`  
+- [X] `usePresence`: subscribe to `/presence/*`; return map of users by `uid`  
   **Files:** `src/hooks/usePresence.ts` (new)
-- [ ] `CursorLayer`: draw remote cursors with user names  
+- [X] `CursorLayer`: draw remote cursors with user names  
   **Files:** `src/components/CursorLayer.tsx` (new)
-- [ ] `PresenceList`: show who’s online; mount in app shell  
+- [X] `PresenceList`: show who's online; mount in app shell  
   **Files:** `src/components/PresenceList.tsx` (new), `src/App.tsx` (edit)
 
 **Tests (bare‑bones):** Hook contract only (mock RTDB).  
-- [ ] `presence.hook.test.tsx`: mock subscription; ensure hook returns users map and updates on emit  
+- [X] `presence.hook.test.tsx`: mock subscription; ensure hook returns users map and updates on emit  
   **Files:** `tests/presence.hook.test.tsx` (new)
 
 ---

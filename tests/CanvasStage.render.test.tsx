@@ -28,6 +28,37 @@ vi.mock('react-konva', () => ({
   ),
 }));
 
+// Mock the RectNode component to avoid Konva node method calls
+vi.mock('../src/components/RectNode', () => ({
+  RectNode: React.forwardRef(({ rect, isSelected, onClick, onDragEnd }: any, ref: any) => {
+    // Create a mock Konva node object with the methods that CanvasStage expects
+    const mockNode = {
+      x: vi.fn(),
+      y: vi.fn(),
+      width: vi.fn(),
+      height: vi.fn(),
+      rotation: vi.fn(),
+      scaleX: vi.fn(),
+      scaleY: vi.fn(),
+    };
+    
+    // Store the mock node in the ref so CanvasStage can access it
+    if (ref) {
+      ref(mockNode);
+    }
+    
+    return (
+      <div 
+        data-testid="rect-node" 
+        data-rect-id={rect.id}
+        onClick={() => onClick(rect.id)}
+      >
+        Rect {rect.id}
+      </div>
+    );
+  }),
+}));
+
 describe('CanvasStage', () => {
   test('should render without errors', () => {
     const { getByTestId } = render(

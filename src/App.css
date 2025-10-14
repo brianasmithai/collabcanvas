@@ -40,3 +40,61 @@
 .read-the-docs {
   color: #888;
 }
+
+/* Presence List Styles */
+.presence-list {
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px;
+  min-width: 200px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.presence-header {
+  margin-bottom: 8px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid #eee;
+  font-size: 14px;
+}
+
+.presence-empty {
+  color: #666;
+  font-size: 12px;
+  font-style: italic;
+}
+
+.presence-users {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.presence-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+  font-size: 12px;
+}
+
+.presence-indicator {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #ccc;
+  transition: background-color 0.2s ease;
+}
+
+.presence-user.active .presence-indicator {
+  background: #28a745;
+}
+
+.presence-user.inactive .presence-indicator {
+  background: #ffc107;
+}
+
+.presence-name {
+  color: #333;
+  font-weight: 500;
+}

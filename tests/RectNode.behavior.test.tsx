@@ -7,14 +7,14 @@ import type { Rect } from '../src/types';
 
 // Mock react-konva components
 vi.mock('react-konva', () => ({
-  Rect: ({ onClick, onTap, ...props }: any) => (
+  Rect: ({ onClick, onTap, strokeWidth, ...props }: any) => (
     <div 
       data-testid="konva-rect" 
       onClick={onClick}
       onTouchStart={onTap}
       {...props}
-      // Ensure strokeWidth is properly set as an attribute
-      strokeWidth={props.strokeWidth}
+      // Set strokeWidth as a DOM attribute
+      data-stroke-width={strokeWidth}
     />
   ),
 }));
@@ -66,7 +66,7 @@ describe('RectNode', () => {
     const rect = getByTestId('konva-rect');
     expect(rect).toHaveAttribute('fill', '#e3f2fd');
     expect(rect).toHaveAttribute('stroke', '#1976d2');
-    expect(rect).toHaveAttribute('strokeWidth', '3');
+    expect(rect).toHaveAttribute('data-stroke-width', '3');
   });
 
   test('should apply unselected styling when isSelected is false', () => {
@@ -81,7 +81,7 @@ describe('RectNode', () => {
     const rect = getByTestId('konva-rect');
     expect(rect).toHaveAttribute('fill', '#bbdefb');
     expect(rect).toHaveAttribute('stroke', '#2196f3');
-    expect(rect).toHaveAttribute('strokeWidth', '2');
+    expect(rect).toHaveAttribute('data-stroke-width', '2');
   });
 
   test('should call onClick with rect id when clicked', () => {
