@@ -16,6 +16,16 @@ vi.mock('react-konva', () => ({
       {children}
     </div>
   ),
+  Rect: ({ children, ...props }: any) => (
+    <div data-testid="konva-rect" {...props}>
+      {children}
+    </div>
+  ),
+  Transformer: ({ children, ...props }: any) => (
+    <div data-testid="konva-transformer" {...props}>
+      {children}
+    </div>
+  ),
 }));
 
 describe('CanvasStage', () => {
