@@ -7,12 +7,18 @@ interface RectNodeProps {
   rect: Rect;
   isSelected: boolean;
   onClick: (rectId: string) => void;
+  onDragEnd: (rectId: string, newX: number, newY: number) => void;
 }
 
-export const RectNode = forwardRef<any, RectNodeProps>(({ rect, isSelected, onClick }, ref) => {
+export const RectNode = forwardRef<any, RectNodeProps>(({ rect, isSelected, onClick, onDragEnd }, ref) => {
   const handleClick = (e: any) => {
     e.cancelBubble = true; // Prevent stage click
     onClick(rect.id);
+  };
+
+  const handleDragEnd = (e: any) => {
+    const node = e.target;
+    onDragEnd(rect.id, node.x(), node.y());
   };
 
   return (
@@ -28,7 +34,8 @@ export const RectNode = forwardRef<any, RectNodeProps>(({ rect, isSelected, onCl
       strokeWidth={isSelected ? 3 : 2}
       onClick={handleClick}
       onTap={handleClick}
-      draggable={false} // Will be handled by CanvasStage
+      onDragEnd={handleDragEnd}
+      draggable={true}
     />
   );
 });

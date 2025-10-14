@@ -65,3 +65,37 @@ export function worldToScreen(worldX: number, worldY: number, viewport: { x: num
     y: worldY * viewport.scale + viewport.y,
   };
 }
+
+/**
+ * Normalize rectangle bounds to ensure positive width/height
+ */
+export function normalizeRectBounds(x: number, y: number, width: number, height: number) {
+  const normalizedWidth = Math.abs(width);
+  const normalizedHeight = Math.abs(height);
+  const normalizedX = width < 0 ? x + width : x;
+  const normalizedY = height < 0 ? y + height : y;
+  
+  return {
+    x: normalizedX,
+    y: normalizedY,
+    width: normalizedWidth,
+    height: normalizedHeight,
+  };
+}
+
+/**
+ * Check if a point is inside a rectangle
+ */
+export function pointInRect(px: number, py: number, rx: number, ry: number, rw: number, rh: number): boolean {
+  return px >= rx && px <= rx + rw && py >= ry && py <= ry + rh;
+}
+
+/**
+ * Get rectangle center point
+ */
+export function getRectCenter(x: number, y: number, width: number, height: number) {
+  return {
+    x: x + width / 2,
+    y: y + height / 2,
+  };
+}

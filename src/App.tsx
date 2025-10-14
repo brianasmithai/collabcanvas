@@ -37,7 +37,12 @@ function App() {
         <div style={{ marginTop: '10px', fontSize: '12px', color: '#666' }}>
           <div>• Drag to pan around the canvas</div>
           <div>• Mouse wheel to zoom in/out</div>
-          <div>• You should see colored rectangles on the canvas</div>
+          <div>• Click rectangles to select them</div>
+          <div>• Double-click empty space to create rectangle</div>
+          <div>• Press 'N' to create rectangle at center</div>
+          <div>• Drag rectangles to move them</div>
+          <div>• Use resize handles to resize/rotate</div>
+          <div>• Press Delete/Backspace to delete selected</div>
         </div>
       </div>
       <CanvasStage width={dimensions.width} height={dimensions.height} />
