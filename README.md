@@ -49,7 +49,8 @@ A real-time collaborative canvas application built with React, TypeScript, and F
 2. Enable Authentication (Email/Password)
 3. Enable Firestore Database
 4. Enable Realtime Database
-5. Create a `.env.local` file with your Firebase config:
+5. Configure Security Rules (see Security Rules section below)
+6. Create a `.env.local` file with your Firebase config:
 
 ```env
 VITE_FIREBASE_API_KEY=your_api_key
@@ -62,6 +63,61 @@ VITE_FIREBASE_DATABASE_URL=https://your_project-default-rtdb.firebaseio.com
 ```
 
 **Note:** The `.env.local` file is already configured for this project with the Firebase configuration. The Firebase client is initialized in `src/config/firebaseClient.ts` and exports `auth`, `firestore`, and `rtdb` services.
+
+## Security Rules
+
+### Firestore Rules
+
+Copy and paste these rules into your Firestore Database Rules in the Firebase Console:
+
+```javascript
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Rectangles collection - auth required, basic validation
+    match /rectangles/{rectangleId} {
+      allow read, write: if request.auth != null;
+      
+      // Validate write operations
+      allow write: if request.auth != null 
+        && request.resource.data.keys().hasAll(['id', 'x', 'y', 'width', 'height', 'rotation', 'updatedAt', 'updatedBy'])
+        && request.resource.data.updatedBy == request.auth.uid;
+    }
+  }
+}
+```
+
+### Realtime Database Rules
+
+Copy and paste these rules into your Realtime Database Rules in the Firebase Console:
+
+```json
+{
+  "rules": {
+    "presence": {
+      ".read": "auth != null",
+      ".write": "auth != null",
+      "$uid": {
+        ".write": "auth != null && auth.uid == $uid"
+      }
+    }
+  }
+}
+```
+
+### Rule Explanations
+
+**Firestore Rules:**
+- ✅ **Authentication required**: Only authenticated users can read/write rectangles
+- ✅ **Field validation on writes**: Ensures all required fields are present when creating/updating rectangles
+- ✅ **User ownership**: `updatedBy` field must match the authenticated user's UID
+- ✅ **Read access**: All authenticated users can read rectangles (for collaboration)
+
+**Realtime Database Rules:**
+- ✅ **Authentication required**: Only authenticated users can access presence data
+- ✅ **User isolation**: Users can only write to their own presence node (`/presence/{uid}`)
+- ✅ **Read access**: All authenticated users can read all presence data (for collaboration)
+- ✅ **Write access**: All authenticated users can write to presence (for cursor updates)
 
 ## Available Scripts
 

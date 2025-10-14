@@ -248,9 +248,9 @@ tests/
 ## PR 12 — Security Rules (Firestore + RTDB)
 **Goal:** Auth‑gated access with minimal safe rules.
 
-- [ ] Firestore Rules for `rectangles` (auth required; field allowlist)  
+- [X] Firestore Rules for `rectangles` (auth required; field allowlist)  
   **Files:** `README.md` (edit: paste‑ready rule snippet)
-- [ ] RTDB Rules for `/presence` (auth required; users write own node)  
+- [X] RTDB Rules for `/presence` (auth required; users write own node)  
   **Files:** `README.md` (edit: paste‑ready rule snippet)
 
 **Tests (bare‑bones):** *None (rules are best validated manually in console for MVP).*
