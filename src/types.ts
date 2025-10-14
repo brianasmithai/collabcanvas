@@ -1,0 +1,34 @@
+// Core domain types for CollabCanvas
+
+// Rectangle shape interface (Firestore document)
+export interface Rect {
+  id: string;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation: number; // degrees
+  updatedAt: number; // ms since epoch
+  updatedBy: string; // Firebase Auth uid
+}
+
+// User presence interface (Realtime Database)
+export interface Presence {
+  name: string;
+  cursor: {
+    x: number;
+    y: number;
+  };
+  selectionIds: string[]; // selected rectangle ids
+  updatedAt: number; // ms since epoch
+}
+
+// UI tool modes
+export type ToolMode = 'select' | 'create';
+
+// Canvas viewport state
+export interface ViewportState {
+  scale: number;
+  x: number; // pan x offset
+  y: number; // pan y offset
+}

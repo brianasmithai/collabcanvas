@@ -2,9 +2,16 @@ import { useState } from 'react'
 import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
+import { useUIStore } from './state/uiStore'
 
 function App() {
   const [count, setCount] = useState(0)
+  
+  // Consume UI store for compile-time sanity
+  const { toolMode, viewport, selectionIds } = useUIStore()
+  
+  // Log store values to console for verification (remove in production)
+  console.log('UI Store state:', { toolMode, viewport, selectionIds })
 
   return (
     <>

@@ -78,13 +78,13 @@ tests/
 ## PR 2 — Firebase Wiring (Auth + Firestore + RTDB)
 **Goal:** Configure Firebase SDK, env, and exports.
 
-- [ ] Create Firebase project; enable Email/Password Auth, Firestore, RTDB  
+- [X] Create Firebase project; enable Email/Password Auth, Firestore, RTDB  
   **Files:** `README.md` (edit: setup steps & console notes)
-- [ ] Add environment variables (Vite style `VITE_*`)  
+- [X] Add environment variables (Vite style `VITE_*`)  
   **Files:** `.env.local` (new)
-- [ ] Implement `firebaseClient.ts` (app init, export `auth`, `firestore`, `rtdb`)  
+- [X] Implement `firebaseClient.ts` (app init, export `auth`, `firestore`, `rtdb`)  
   **Files:** `src/config/firebaseClient.ts` (new)
-- [ ] Verify build uses envs correctly (no hardcoded secrets)  
+- [X] Verify build uses envs correctly (no hardcoded secrets)  
   **Files:** `vite.config.ts` (edit if needed), `README.md` (edit: env table)
 
 **Tests (bare‑bones):** *None (SDK init typically mocked; skip to save time).*
