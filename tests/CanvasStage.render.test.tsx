@@ -59,6 +59,30 @@ vi.mock('../src/components/RectNode', () => ({
   }),
 }));
 
+// Mock the useRectangles hook to return non-loading state
+vi.mock('../src/hooks/useRectangles', () => ({
+  useRectangles: () => ({
+    rectangles: [
+      {
+        id: 'rect1',
+        x: 100,
+        y: 100,
+        width: 200,
+        height: 100,
+        rotation: 0,
+        updatedAt: Date.now(),
+        updatedBy: 'test-user',
+      },
+    ],
+    loading: false,
+    error: null,
+    createRect: vi.fn(),
+    updateRect: vi.fn(),
+    deleteRect: vi.fn(),
+    deleteRects: vi.fn(),
+  }),
+}));
+
 describe('CanvasStage', () => {
   test('should render without errors', () => {
     const { getByTestId } = render(

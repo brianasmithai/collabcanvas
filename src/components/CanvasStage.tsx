@@ -5,6 +5,7 @@ import { useUIStore } from '../state/uiStore';
 import { getZoomFactor, screenToWorld } from '../utils/geometry';
 import { RectNode } from './RectNode';
 import { CursorLayer } from './CursorLayer';
+import { useRectangles } from '../hooks/useRectangles';
 import type { Rect } from '../types';
 
 interface CanvasStageProps {
@@ -19,39 +20,8 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
   const rectRefs = useRef<{ [key: string]: any }>({});
   const { viewport, updateViewport, selectionIds, setSelectionIds, clearSelection } = useUIStore();
   
-  // Temporary local array of rectangles for testing
-  const [rectangles, setRectangles] = useState<Rect[]>([
-    {
-      id: 'rect1',
-      x: 100,
-      y: 100,
-      width: 200,
-      height: 100,
-      rotation: 0,
-      updatedAt: Date.now(),
-      updatedBy: 'local-user',
-    },
-    {
-      id: 'rect2',
-      x: 400,
-      y: 200,
-      width: 150,
-      height: 80,
-      rotation: 0,
-      updatedAt: Date.now(),
-      updatedBy: 'local-user',
-    },
-    {
-      id: 'rect3',
-      x: 200,
-      y: 400,
-      width: 100,
-      height: 100,
-      rotation: 0,
-      updatedAt: Date.now(),
-      updatedBy: 'local-user',
-    },
-  ]);
+  // Use Firestore-backed rectangles
+  const { rectangles, loading, error, createRect, updateRect, deleteRects } = useRectangles();
 
   // Handle wheel zoom
   const handleWheel = useCallback((e: any) => {
@@ -100,21 +70,24 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
   }, [clearSelection]);
 
   // Create a new rectangle
-  const createRectangle = useCallback((x: number, y: number) => {
-    const newRect: Rect = {
-      id: `rect-${Date.now()}`,
+  const createRectangle = useCallback(async (x: number, y: number) => {
+    const newRect: Omit<Rect, 'id'> = {
       x: x - 50, // Center the rectangle on the click point
       y: y - 25,
       width: 100,
       height: 50,
       rotation: 0,
       updatedAt: Date.now(),
-      updatedBy: 'local-user',
+      updatedBy: currentUserId || 'local-user',
     };
     
-    setRectangles(prev => [...prev, newRect]);
-    setSelectionIds([newRect.id]); // Select the new rectangle
-  }, [setSelectionIds]);
+    try {
+      const id = await createRect(newRect);
+      setSelectionIds([id]); // Select the new rectangle
+    } catch (err) {
+      console.error('Failed to create rectangle:', err);
+    }
+  }, [createRect, setSelectionIds, currentUserId]);
 
   // Handle stage double-click (create rectangle)
   const handleStageDoubleClick = useCallback((e: any) => {
@@ -142,13 +115,18 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
   }, [selectionIds, setSelectionIds]);
 
   // Handle rectangle drag end (update position)
-  const handleRectDragEnd = useCallback((rectId: string, newX: number, newY: number) => {
-    setRectangles(prev => prev.map(rect => 
-      rect.id === rectId 
-        ? { ...rect, x: newX, y: newY, updatedAt: Date.now() }
-        : rect
-    ));
-  }, []);
+  const handleRectDragEnd = useCallback(async (rectId: string, newX: number, newY: number) => {
+    try {
+      await updateRect(rectId, { 
+        x: newX, 
+        y: newY, 
+        updatedAt: Date.now(),
+        updatedBy: currentUserId || 'local-user'
+      });
+    } catch (err) {
+      console.error('Failed to update rectangle position:', err);
+    }
+  }, [updateRect, currentUserId]);
 
   // Update transformer when selection changes
   useEffect(() => {
@@ -177,45 +155,51 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
   }, [rectangles]);
 
   // Handle transformer changes (resize/rotate)
-  const handleTransformEnd = useCallback(() => {
+  const handleTransformEnd = useCallback(async () => {
     if (transformerRef.current && selectionIds.length > 0) {
       const nodes = transformerRef.current.nodes();
-      nodes.forEach((node: any) => {
+      const updatePromises = nodes.map(async (node: any) => {
         const rectId = rectangles.find(rect => rectRefs.current[rect.id] === node)?.id;
         if (rectId) {
           // Apply the scale to width/height and reset scale to 1
           const newWidth = node.width() * node.scaleX();
           const newHeight = node.height() * node.scaleY();
           
-          setRectangles(prev => prev.map(rect => 
-            rect.id === rectId 
-              ? { 
-                  ...rect, 
-                  x: node.x(), 
-                  y: node.y(), 
-                  width: newWidth, 
-                  height: newHeight, 
-                  rotation: node.rotation(),
-                  updatedAt: Date.now() 
-                }
-              : rect
-          ));
+          try {
+            await updateRect(rectId, {
+              x: node.x(),
+              y: node.y(),
+              width: newWidth,
+              height: newHeight,
+              rotation: node.rotation(),
+              updatedAt: Date.now(),
+              updatedBy: currentUserId || 'local-user'
+            });
+          } catch (err) {
+            console.error('Failed to update rectangle transform:', err);
+          }
           
           // Reset the scale to 1 to prevent accumulation
           node.scaleX(1);
           node.scaleY(1);
         }
       });
+      
+      await Promise.all(updatePromises);
     }
-  }, [selectionIds, rectangles]);
+  }, [selectionIds, rectangles, updateRect, currentUserId]);
 
   // Delete selected rectangles
-  const deleteSelectedRectangles = useCallback(() => {
+  const deleteSelectedRectangles = useCallback(async () => {
     if (selectionIds.length > 0) {
-      setRectangles(prev => prev.filter(rect => !selectionIds.includes(rect.id)));
-      clearSelection();
+      try {
+        await deleteRects(selectionIds);
+        clearSelection();
+      } catch (err) {
+        console.error('Failed to delete rectangles:', err);
+      }
     }
-  }, [selectionIds, clearSelection]);
+  }, [selectionIds, deleteRects, clearSelection]);
 
   // Handle keyboard events
   useEffect(() => {
@@ -234,6 +218,45 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [deleteSelectedRectangles, createRectangle, width, height, viewport]);
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div style={{ 
+        width, 
+        height, 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        backgroundColor: '#f0f0f0',
+        fontSize: '18px',
+        color: '#666'
+      }}>
+        Loading rectangles...
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div style={{ 
+        width, 
+        height, 
+        display: 'flex', 
+        alignItems: 'center', 
+        justifyContent: 'center',
+        backgroundColor: '#ffe6e6',
+        fontSize: '18px',
+        color: '#d32f2f',
+        flexDirection: 'column',
+        gap: '10px'
+      }}>
+        <div>Error loading rectangles:</div>
+        <div style={{ fontSize: '14px', textAlign: 'center' }}>{error.message}</div>
+      </div>
+    );
+  }
 
   return (
     <Stage

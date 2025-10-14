@@ -182,15 +182,15 @@ tests/
 ## PR 8 — Firestore Rectangles (Durable Model)
 **Goal:** Replace local array with Firestore‑backed rectangles.
 
-- [ ] `rectangles.ts`: CRUD (add/update/delete), converters, query subscription  
+- [X] `rectangles.ts`: CRUD (add/update/delete), converters, query subscription  
   **Files:** `src/services/rectangles.ts` (new), `src/types.ts` (edit)
-- [ ] `useRectangles`: subscribe with `onSnapshot` and expose list + ops  
+- [X] `useRectangles`: subscribe with `onSnapshot` and expose list + ops  
   **Files:** `src/hooks/useRectangles.ts` (new)
-- [ ] Wire `CanvasStage` to use hook/service for read/write  
+- [X] Wire `CanvasStage` to use hook/service for read/write  
   **Files:** `src/components/CanvasStage.tsx` (edit), `src/components/RectNode.tsx` (edit)
 
 **Tests (bare‑bones):** Hook snapshot flow (mock Firestore).  
-- [ ] `rectangles.hook.test.tsx`: mock `onSnapshot` to emit docs; assert hook returns list and update applies LWW fields  
+- [X] `rectangles.hook.test.tsx`: mock `onSnapshot` to emit docs; assert hook returns list and update applies LWW fields  
   **Files:** `tests/rectangles.hook.test.tsx` (new)
 
 ---
