@@ -350,9 +350,68 @@ After deployment, test your application:
 - Verify security rules are properly configured
 - Check browser console for Firebase errors
 
+## Keyboard Shortcuts
+
+- **Double-click** empty space - Create new rectangle
+- **N** - Create rectangle at canvas center
+- **Delete/Backspace** - Delete selected rectangle(s)
+- **Mouse wheel** - Zoom in/out
+- **Drag** - Pan canvas or move rectangles
+- **Click** - Select rectangle
+- **Drag handles** - Resize/rotate selected rectangle
+
+## Known Limitations (MVP)
+
+### Current Scope
+- **Single shape type**: Only rectangles supported
+- **Single canvas**: One global canvas shared by all users
+- **Basic transforms**: Move, resize, rotate, delete only
+- **Desktop-first**: Mobile support is limited
+
+### Performance Notes
+- **Recommended limit**: ~200 rectangles for smooth performance
+- **Concurrent users**: Tested with 3+ users, may need optimization for 10+
+- **Large files**: Bundle size is ~1.2MB (includes Firebase SDK)
+
+### Technical Limitations
+- **No undo/redo**: Changes are permanent once made
+- **No export**: Cannot save canvas as image/PDF
+- **No history**: No timeline or version control
+- **Basic conflict resolution**: Last-write-wins only
+
+### Browser Compatibility
+- **Modern browsers**: Chrome, Firefox, Safari, Edge (latest versions)
+- **Mobile**: Basic functionality only, no touch gestures
+- **Offline**: No offline support, requires internet connection
+
+## Development Notes
+
+### Local Development
+```bash
+# Install dependencies
+npm install
+
+# Start development server
+npm run dev
+
+# Build for production
+npm run build
+
+# Run tests
+npm test
+```
+
+### Environment Setup
+- Copy `.env.example` to `.env.local`
+- Fill in your Firebase configuration values
+- Ensure Firebase project has Auth, Firestore, and RTDB enabled
+
 ## Project Status
 
 ✅ **MVP Complete** - Core features implemented and deployed. See the [tasks documentation](docs/tasks.md) for completed features.
+
+**Version:** v0.1.0-mvp  
+**Last Updated:** October 2024
 
 ## License
 

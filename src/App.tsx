@@ -7,6 +7,7 @@ import { useUIStore } from './state/uiStore'
 import { CanvasStage } from './components/CanvasStage'
 import { PresenceList } from './components/PresenceList'
 import { AuthGate } from './components/AuthGate'
+import { TopBar } from './components/TopBar'
 
 function App() {
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 })
@@ -105,8 +106,14 @@ function App() {
   // Show main app if authenticated
   return (
     <div style={{ width: '100vw', height: '100vh', overflow: 'hidden', backgroundColor: '#e0e0e0' }}>
+      {/* Top Bar */}
+      <TopBar 
+        userEmail={user.email || undefined}
+        userDisplayName={user.displayName || undefined}
+      />
+      
       {/* Debug info panel */}
-      <div style={{ position: 'absolute', top: 10, left: 10, zIndex: 1000, background: 'white', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}>
+      <div style={{ position: 'absolute', top: 70, left: 10, zIndex: 1000, background: 'white', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}>
         <div><strong>Canvas Debug Info:</strong></div>
         <div>User: {user.email} ({user.displayName || 'No display name'})</div>
         <div>Canvas: {dimensions.width} x {dimensions.height}</div>
@@ -126,14 +133,14 @@ function App() {
       </div>
       
       {/* Presence list */}
-      <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 1000 }}>
+      <div style={{ position: 'absolute', top: 70, right: 10, zIndex: 1000 }}>
         <PresenceList currentUserId={currentUserId || undefined} />
       </div>
       
       {/* Canvas stage */}
       <CanvasStage 
         width={dimensions.width} 
-        height={dimensions.height} 
+        height={dimensions.height - 60} 
         currentUserId={currentUserId || undefined}
       />
     </div>

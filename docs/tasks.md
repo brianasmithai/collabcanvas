@@ -278,11 +278,11 @@ tests/
 ## PR 14 — Demo Polish & README
 **Goal:** Friendly demo and clear operator instructions.
 
-- [ ] Add `TopBar` (app name, sign out)  
+- [X] Add `TopBar` (app name, sign out)  
   **Files:** `src/components/TopBar.tsx` (new), `src/App.tsx` (edit)
-- [ ] Finalize README (run/deploy/test, known limits, shortcuts)  
+- [X] Finalize README (run/deploy/test, known limits, shortcuts)  
   **Files:** `README.md` (edit)
-- [ ] Tag release `v0.1.0‑mvp`  
+- [X] Tag release `v0.1.0‑mvp`  
   **Files:** (git tag outside repo), `README.md` (edit: changelog/notes)
 
 ---
