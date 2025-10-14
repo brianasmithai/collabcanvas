@@ -4,6 +4,7 @@ import { Stage, Layer, Transformer } from 'react-konva';
 import { useUIStore } from '../state/uiStore';
 import { getZoomFactor, screenToWorld } from '../utils/geometry';
 import { throttle } from '../utils/throttle';
+import { updateCursor } from '../services/presence';
 import { RectNode } from './RectNode';
 import { CursorLayer } from './CursorLayer';
 import { useRectangles } from '../hooks/useRectangles';
@@ -194,6 +195,19 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
     }, 100); // Throttle to 10 updates per second
   }
 
+  // Create throttled cursor update function
+  const throttledCursorUpdate = useRef<((x: number, y: number) => void) | null>(null);
+  
+  if (!throttledCursorUpdate.current && currentUserId) {
+    throttledCursorUpdate.current = throttle(async (x: number, y: number) => {
+      try {
+        await updateCursor(currentUserId, { x, y });
+      } catch (err) {
+        console.error('Failed to update cursor position:', err);
+      }
+    }, 100); // Throttle to 10 updates per second
+  }
+
   // Handle transformer changes (resize/rotate)
   const handleTransformEnd = useCallback(async () => {
     if (transformerRef.current && selectionIds.length > 0) {
@@ -261,6 +275,30 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [deleteSelectedRectangles, createRectangle, width, height, viewport]);
 
+  // Handle mouse movement for cursor tracking
+  const handleMouseMove = useCallback((e: any) => {
+    if (!currentUserId || !throttledCursorUpdate.current || !viewport) return;
+    
+    const stage = e.target.getStage();
+    const pointerPosition = stage.getPointerPosition();
+    
+    if (pointerPosition) {
+      // Convert screen coordinates to world coordinates
+      const worldPos = screenToWorld(pointerPosition.x, pointerPosition.y, viewport);
+      console.log('🖱️ Cursor move:', { x: worldPos.x, y: worldPos.y, userId: currentUserId });
+      throttledCursorUpdate.current(worldPos.x, worldPos.y);
+    }
+  }, [currentUserId, viewport]);
+
+  // Handle mouse leave to clear cursor position
+  const handleMouseLeave = useCallback(() => {
+    if (!currentUserId || !throttledCursorUpdate.current) return;
+    
+    // Set cursor to off-screen position when mouse leaves
+    console.log('🖱️ Mouse leave, clearing cursor');
+    throttledCursorUpdate.current(-1000, -1000);
+  }, [currentUserId]);
+
   // Show loading state
   if (loading) {
     return (
@@ -311,6 +349,8 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
       y={viewport.y}
       draggable
       onWheel={handleWheel}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={handleMouseLeave}
       onDragEnd={handleDragEnd}
       onClick={handleStageClick}
       onTap={handleStageClick}

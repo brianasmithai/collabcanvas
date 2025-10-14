@@ -15,6 +15,7 @@ export interface Rect {
 // User presence interface (Realtime Database)
 export interface Presence {
   name: string;
+  displayName: string; // user's display name for UI
   cursor: {
     x: number;
     y: number;

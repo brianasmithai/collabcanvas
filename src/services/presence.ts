@@ -23,17 +23,35 @@ export const setPresence = async (uid: string, presence: Omit<Presence, 'updated
 };
 
 /**
+ * Set initial presence for a new user
+ * @param uid - Firebase Auth user ID
+ * @param displayName - User's display name
+ */
+export const setInitialPresence = async (uid: string, displayName: string) => {
+  const presenceData: Omit<Presence, 'updatedAt'> = {
+    name: displayName,
+    displayName: displayName,
+    cursor: { x: 0, y: 0 },
+    selectionIds: [],
+  };
+  
+  await setPresence(uid, presenceData);
+};
+
+/**
  * Update cursor position for current user
  * @param uid - Firebase Auth user ID
  * @param cursor - New cursor position
  */
 export const updateCursor = async (uid: string, cursor: { x: number; y: number }) => {
+  console.log('📍 Updating cursor:', { uid, cursor });
   const cursorRef = ref(rtdb, `presence/${uid}/cursor`);
   await set(cursorRef, cursor);
   
   // Also update the timestamp
   const timestampRef = ref(rtdb, `presence/${uid}/updatedAt`);
   await set(timestampRef, Date.now());
+  console.log('✅ Cursor updated successfully');
 };
 
 /**

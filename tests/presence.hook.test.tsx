@@ -64,12 +64,14 @@ describe('usePresence', () => {
     expect(result.current).toEqual({
       'user1': {
         name: 'Alice',
+        displayName: 'Alice',
         cursor: { x: 100, y: 200 },
         selectionIds: ['rect1'],
         updatedAt: 1234567890,
       },
       'user2': {
         name: 'Bob',
+        displayName: 'Bob',
         cursor: { x: 300, y: 400 },
         selectionIds: [],
         updatedAt: 1234567891,
@@ -114,6 +116,7 @@ describe('usePresence', () => {
     expect(result.current).toEqual({
       'user1': {
         name: 'Unknown User',
+        displayName: 'Unknown User',
         cursor: { x: 0, y: 0 },
         selectionIds: [],
         updatedAt: 1234567890,

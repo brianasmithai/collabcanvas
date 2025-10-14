@@ -21,7 +21,7 @@ export const PresenceList: React.FC<PresenceListProps> = ({
     .filter(([uid]) => uid !== currentUserId)
     .map(([uid, presence]) => ({
       uid,
-      name: presence.name,
+      name: presence.displayName || presence.name,
       lastSeen: presence.updatedAt,
     }))
     .sort((a, b) => b.lastSeen - a.lastSeen); // Sort by most recent activity

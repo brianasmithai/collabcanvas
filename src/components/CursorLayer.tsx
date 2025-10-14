@@ -13,6 +13,14 @@ export const CursorLayer: React.FC<CursorLayerProps> = ({ currentUserId }) => {
   const presenceMap = usePresence();
   const { viewport } = useUIStore();
 
+  // Debug logging
+  console.log('🎯 CursorLayer render:', { 
+    currentUserId, 
+    presenceMap, 
+    viewport,
+    presenceEntries: Object.entries(presenceMap)
+  });
+
   // Filter out current user and users without valid cursor data
   const remoteUsers = Object.entries(presenceMap).filter(([uid, presence]) => 
     uid !== currentUserId && 
@@ -21,18 +29,31 @@ export const CursorLayer: React.FC<CursorLayerProps> = ({ currentUserId }) => {
     typeof presence.cursor.y === 'number'
   );
 
+  console.log('🎯 Remote users for cursors:', remoteUsers);
+
   if (remoteUsers.length === 0) {
+    console.log('🎯 No remote users to show cursors for');
     return null;
   }
 
   return (
     <Layer>
       {remoteUsers.map(([uid, presence]) => {
-        const { cursor, name } = presence;
+        const { cursor, displayName, name } = presence;
+        const userName = displayName || name;
         
         // Convert world coordinates to screen coordinates
         const screenX = cursor.x * viewport.scale + viewport.x;
         const screenY = cursor.y * viewport.scale + viewport.y;
+
+        console.log('🎯 Rendering cursor for user:', { 
+          uid, 
+          userName, 
+          cursor, 
+          screenX, 
+          screenY, 
+          viewport 
+        });
 
         return (
           <Group key={uid} x={screenX} y={screenY}>
@@ -53,7 +74,7 @@ export const CursorLayer: React.FC<CursorLayerProps> = ({ currentUserId }) => {
             <Text
               x={8}
               y={-8}
-              text={name}
+              text={userName}
               fontSize={12}
               fontFamily="Arial, sans-serif"
               fill="#333"

@@ -30,6 +30,7 @@ export const usePresence = (): PresenceMap => {
           if (userPresence) {
             presence[uid] = {
               name: userPresence.name || 'Unknown User',
+              displayName: userPresence.displayName || userPresence.name || 'Unknown User',
               cursor: userPresence.cursor || { x: 0, y: 0 },
               selectionIds: userPresence.selectionIds || [],
               updatedAt: userPresence.updatedAt || Date.now(),
