@@ -61,6 +61,8 @@ VITE_FIREBASE_APP_ID=your_app_id
 VITE_FIREBASE_DATABASE_URL=https://your_project-default-rtdb.firebaseio.com
 ```
 
+**Note:** The `.env.local` file is already configured for this project with the Firebase configuration. The Firebase client is initialized in `src/config/firebaseClient.ts` and exports `auth`, `firestore`, and `rtdb` services.
+
 ## Available Scripts
 
 - `npm run dev` - Start development server

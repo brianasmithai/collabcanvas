@@ -66,9 +66,9 @@ tests/
   **Files:** `package.json` (new), `tsconfig.json` (new), `vite.config.ts` (new), `index.html` (new), `src/main.tsx` (new), `src/App.tsx` (new), `src/index.css` (new)
 - [X] Install deps: `konva react-konva zustand firebase`  
   **Files:** `package.json` (edit), lockfile (auto)
-- [ ] Add basic scripts: `dev`, `build`, `preview`  
+- [X] Add basic scripts: `dev`, `build`, `preview`  
   **Files:** `package.json` (edit)
-- [ ] Add `.gitignore`, starter `README.md`  
+- [X] Add `.gitignore`, starter `README.md`  
   **Files:** `.gitignore` (new), `README.md` (new)
 
 **Tests (bare‑bones):** *None for this PR.*
