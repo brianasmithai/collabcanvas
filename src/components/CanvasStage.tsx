@@ -216,8 +216,8 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
   const lastWorldPosition = useRef<{ x: number; y: number } | null>(null);
   const isDragging = useRef<boolean>(false);
 
-  // Note: Real-time transform updates temporarily disabled to fix resize bug
-  // The handleTransform function was causing position conflicts during resize operations
+  // Note: Real-time transform updates removed for MVP stability
+  // Transforms will only sync after completion via handleTransformEnd
 
   // Handle transformer changes (resize/rotate) - final update
   const handleTransformEnd = useCallback(async () => {
@@ -485,7 +485,7 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
               }
               return newBox;
             }}
-            // onTransform={handleTransform} // Temporarily disabled to fix resize bug
+            // onTransform removed - transforms only sync on completion
             onTransformEnd={handleTransformEnd}
           />
         )}
