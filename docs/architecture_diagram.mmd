@@ -1,0 +1,114 @@
+graph LR
+
+%% ================= FRONTEND APP =================
+subgraph Client_App_React_Vite_TS
+  direction LR
+
+  A[App tsx AuthGate and Canvas]
+  ZS[Zustand uiStore]
+  K[React Konva CanvasStage RectNode Transformer]
+  CU[CursorLayer]
+  PL[PresenceList]
+  TB[TopBar]
+
+  subgraph Hooks
+    direction TB
+    HR[useRectangles]
+    HP[usePresence]
+  end
+
+  subgraph Services
+    direction TB
+    SR[rectangles ts]
+    SP[presence ts]
+  end
+
+  CF[firebaseClient ts]
+
+  A --> K
+  A --> TB
+  A --> PL
+  A --> CU
+  A --> AG
+  A --> ZS
+
+  AG[AuthGate Email Password]
+
+  K --> ZS
+  ZS --> K
+  K --> HR
+  HR --> K
+  K --> SR
+  SR --> K
+  CU --> HP
+  HP --> CU
+  PL --> HP
+  HP --> PL
+
+  HR --> CF
+  HP --> CF
+  SR --> CF
+  SP --> CF
+end
+
+%% ================= BACKEND FIREBASE =================
+subgraph Firebase_Backend
+  direction TB
+  FA[Firebase Auth]
+  FS[Cloud Firestore rectangles]
+  RT[Realtime Database presence path]
+end
+
+%% ================= HOSTING DEPLOY =================
+H[Hosting Vercel or Firebase Hosting]
+
+%% ================= DATA AND AUTH FLOWS =================
+AG --> FA
+FA --> SP
+FA --> FS
+FA --> RT
+
+SP --> RT
+HP --> RT
+RT --> HP
+
+HR --> FS
+FS --> HR
+
+K --> ZS
+ZS --> K
+
+Client_App_React_Vite_TS --> FS
+Client_App_React_Vite_TS --> RT
+
+Client_App_React_Vite_TS --> H
+
+%% ================= FILE STRUCTURE KEY PIECES =================
+subgraph Key_Source_Files
+  direction TB
+  F1[src components CanvasStage tsx]
+  F2[src components RectNode tsx]
+  F3[src components CursorLayer tsx]
+  F4[src components PresenceList tsx]
+  F5[src components AuthGate tsx]
+  F6[src hooks useRectangles ts]
+  F7[src hooks usePresence ts]
+  F8[src services rectangles ts]
+  F9[src services presence ts]
+  F10[src state uiStore ts]
+  F11[src config firebaseClient ts]
+  F12[src utils throttle ts]
+end
+
+K --- F1
+K --- F2
+CU --- F3
+PL --- F4
+AG --- F5
+HR --- F6
+HP --- F7
+SR --- F8
+SP --- F9
+ZS --- F10
+CF --- F11
+SR --- F12
