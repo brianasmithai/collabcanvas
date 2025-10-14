@@ -62,9 +62,9 @@ tests/
 ## PR 1 — Vite/React/TypeScript Scaffold
 **Goal:** Base app bootstrapped with React + TS.
 
-- [ ] Initialize project with Vite (react-ts template)  
+- [X] Initialize project with Vite (react-ts template)  
   **Files:** `package.json` (new), `tsconfig.json` (new), `vite.config.ts` (new), `index.html` (new), `src/main.tsx` (new), `src/App.tsx` (new), `src/index.css` (new)
-- [ ] Install deps: `konva react-konva zustand firebase`  
+- [X] Install deps: `konva react-konva zustand firebase`  
   **Files:** `package.json` (edit), lockfile (auto)
 - [ ] Add basic scripts: `dev`, `build`, `preview`  
   **Files:** `package.json` (edit)
