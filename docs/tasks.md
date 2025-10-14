@@ -260,12 +260,18 @@ tests/
 ## PR 13 — Deploy (Vercel or Firebase Hosting)
 **Goal:** Public URL with envs configured.
 
-- [ ] Configure hosting; set `VITE_*` envs  
+- [X] Configure hosting; set `VITE_*` envs  
   **Files:** `README.md` (edit: deploy steps), `.env.local` (verify)
-- [ ] Build & deploy; verify on prod with two browsers  
+- [X] Build & deploy; verify on prod with two browsers  
   **Files:** `README.md` (edit: verification checklist)
 
 **Tests (bare‑bones):** *None.*
+
+**✅ Deployment Verification Completed:**
+- Successfully deployed to Vercel with all environment variables configured
+- Multi-user collaboration tested with 3 users using incognito windows
+- Real-time sync, cursor tracking, and persistence all working correctly
+- Application accessible at public Vercel URL
 
 ---
 
