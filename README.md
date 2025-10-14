@@ -101,6 +101,57 @@ User B moves same rectangle at 10:00:00.100
 Result: User B's position wins (more recent timestamp)
 ```
 
+## Manual Testing Guide
+
+To verify the collaborative features work correctly, follow these steps:
+
+### Setup
+1. Open the app in two different browsers (e.g., Chrome and Firefox)
+2. Create accounts with different email addresses (you can use `+` aliases like `user+1@example.com` and `user+2@example.com`)
+3. Log in to both browsers
+
+### Test Scenarios
+
+#### 1. Basic Collaboration
+- **Create rectangles**: Double-click in one browser to create rectangles
+- **Verify sync**: Check that rectangles appear in the other browser
+- **Move rectangles**: Drag rectangles in one browser, verify they move in the other
+- **Resize/rotate**: Use the transformer handles to resize/rotate rectangles
+- **Verify cursors**: Move your mouse in one browser, see the cursor in the other
+
+#### 2. Persistence Testing
+- **Create several rectangles** in different positions and sizes
+- **Refresh both browser tabs** (F5 or Ctrl+R)
+- **Verify persistence**: All rectangles should reappear in the same positions
+- **Close and reopen** the browser tabs
+- **Verify persistence**: Rectangles should still be there
+
+#### 3. Conflict Resolution
+- **Select the same rectangle** in both browsers
+- **Move it simultaneously** in both browsers
+- **Verify LWW**: The last move should win (most recent timestamp)
+- **Try resizing** the same rectangle in both browsers
+- **Verify resolution**: The last resize operation should win
+
+#### 4. User Presence
+- **Check user list**: Verify both users appear in the presence list
+- **Move cursors**: Verify cursor positions update in real-time
+- **Test selection**: Select rectangles and verify a subtle dashed circle appears around other users' cursors when they have selections
+
+#### 5. Error Handling
+- **Disconnect internet**: Temporarily disconnect one browser
+- **Make changes**: Create/move rectangles in the connected browser
+- **Reconnect**: Restore internet connection
+- **Verify sync**: Changes should sync when connection is restored
+
+### Expected Behavior
+- ✅ Rectangles persist after refresh/close
+- ✅ Real-time synchronization between users
+- ✅ Cursor tracking works during all operations
+- ✅ Conflict resolution follows LWW strategy
+- ✅ Loading states show during initial load
+- ✅ Empty state shows helpful message when no rectangles exist
+
 ## Project Status
 
 🚧 **Currently in MVP development** - This is a work in progress. See the [tasks documentation](docs/tasks.md) for current progress and roadmap.

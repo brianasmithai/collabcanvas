@@ -236,9 +236,9 @@ tests/
 ## PR 11 — Persistence on Reload & Sanity Tests
 **Goal:** Verify rectangles reload after refresh/close and basic UX states.
 
-- [ ] Ensure Firestore hydration on mount; add loading/empty indicators  
-  **Files:** `src/hooks/useRectangles.ts` (edit), `src/App.tsx` (edit)
-- [ ] README manual tests (two browsers; create, move, refresh, delete)  
+- [X] Ensure Firestore hydration on mount; add loading/empty indicators  
+  **Files:** `src/hooks/useRectangles.ts` (edit), `src/components/CanvasStage.tsx` (edit)
+- [X] README manual tests (two browsers; create, move, refresh, delete)  
   **Files:** `README.md` (edit)
 
 **Tests (bare‑bones):** *Covered by hook tests in PR 8; no extra automated tests here.*

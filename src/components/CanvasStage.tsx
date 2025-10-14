@@ -1,10 +1,10 @@
 // Canvas Stage component with Konva for 2D canvas interactions
 import React, { useRef, useCallback, useState, useEffect } from 'react';
-import { Stage, Layer, Transformer } from 'react-konva';
+import { Stage, Layer, Transformer, Text } from 'react-konva';
 import { useUIStore } from '../state/uiStore';
 import { getZoomFactor, screenToWorld } from '../utils/geometry';
 import { throttle } from '../utils/throttle';
-import { updateCursor } from '../services/presence';
+import { updateCursor, updateSelection } from '../services/presence';
 import { RectNode } from './RectNode';
 import { CursorLayer } from './CursorLayer';
 import { useRectangles } from '../hooks/useRectangles';
@@ -285,7 +285,6 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
     if (pointerPosition) {
       // Convert screen coordinates to world coordinates
       const worldPos = screenToWorld(pointerPosition.x, pointerPosition.y, viewport);
-      console.log('🖱️ Cursor move:', { x: worldPos.x, y: worldPos.y, userId: currentUserId });
       throttledCursorUpdate.current(worldPos.x, worldPos.y);
     }
   }, [currentUserId, viewport]);
@@ -303,7 +302,6 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
     
     // Convert screen coordinates to world coordinates
     const worldPos = screenToWorld(mouseX, mouseY, viewport);
-    console.log('🖱️ Global cursor move:', { x: worldPos.x, y: worldPos.y, userId: currentUserId });
     throttledCursorUpdate.current(worldPos.x, worldPos.y);
   }, [currentUserId, viewport]);
 
@@ -315,12 +313,18 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
     }
   }, [currentUserId, handleGlobalMouseMove]);
 
+  // Sync selection changes to presence system
+  useEffect(() => {
+    if (currentUserId) {
+      updateSelection(currentUserId, selectionIds);
+    }
+  }, [currentUserId, selectionIds]);
+
   // Handle mouse leave to clear cursor position
   const handleMouseLeave = useCallback(() => {
     if (!currentUserId || !throttledCursorUpdate.current) return;
     
     // Set cursor to off-screen position when mouse leaves
-    console.log('🖱️ Mouse leave, clearing cursor');
     throttledCursorUpdate.current(-1000, -1000);
   }, [currentUserId]);
 
@@ -337,7 +341,7 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
         fontSize: '18px',
         color: '#666'
       }}>
-        Loading rectangles...
+        Loading canvas...
       </div>
     );
   }
@@ -384,6 +388,21 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
       style={{ cursor: 'grab' }}
     >
       <Layer>
+        {/* Empty state indicator */}
+        {rectangles.length === 0 && (
+          <Text
+            x={width / 2}
+            y={height / 2}
+            text="Double-click to create your first rectangle"
+            fontSize={18}
+            fontFamily="Arial, sans-serif"
+            fill="#999"
+            align="center"
+            offsetX={200} // Approximate text width / 2
+            offsetY={10}
+          />
+        )}
+        
         {/* Render all rectangles */}
         {rectangles.map((rect) => (
           <RectNode

@@ -82,16 +82,13 @@
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #ccc;
-  transition: background-color 0.2s ease;
+  background: #28a745; /* Always green for online users */
 }
 
-.presence-user.active .presence-indicator {
-  background: #28a745;
-}
-
-.presence-user.inactive .presence-indicator {
-  background: #ffc107;
+.presence-status {
+  color: #666;
+  font-style: italic;
+  font-size: 0.9em;
 }
 
 .presence-name {

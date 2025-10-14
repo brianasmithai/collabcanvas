@@ -52,11 +52,14 @@ export const PresenceList: React.FC<PresenceListProps> = ({
           return (
             <div 
               key={uid} 
-              className={`presence-user ${isActive ? 'active' : 'inactive'}`}
+              className="presence-user"
               title={`Last seen: ${new Date(lastSeen).toLocaleTimeString()}`}
             >
               <div className="presence-indicator" />
-              <span className="presence-name">{name}</span>
+              <span className="presence-name">
+                {name}
+                {!isActive && <span className="presence-status"> (offline)</span>}
+              </span>
             </div>
           );
         })}

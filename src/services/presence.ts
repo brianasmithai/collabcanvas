@@ -44,7 +44,6 @@ export const setInitialPresence = async (uid: string, displayName: string) => {
  * @param cursor - New cursor position
  */
 export const updateCursor = async (uid: string, cursor: { x: number; y: number }) => {
-  console.log('📍 Updating cursor:', { uid, cursor });
   const cursorRef = ref(rtdb, `presence/${uid}/cursor`);
   await set(cursorRef, cursor);
   
