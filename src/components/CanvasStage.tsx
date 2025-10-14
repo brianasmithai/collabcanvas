@@ -216,36 +216,8 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
   const lastWorldPosition = useRef<{ x: number; y: number } | null>(null);
   const isDragging = useRef<boolean>(false);
 
-  // Handle transformer changes during transform (real-time updates)
-  const handleTransform = useCallback(() => {
-    if (transformerRef.current && selectionIds.length > 0) {
-      const nodes = transformerRef.current.nodes();
-      
-      for (const node of nodes) {
-        const rectId = rectangles.find(rect => rectRefs.current[rect.id] === node)?.id;
-        if (rectId && throttledTransformUpdate.current) {
-          // Apply the scale to width/height and reset scale to 1
-          const newWidth = node.width() * node.scaleX();
-          const newHeight = node.height() * node.scaleY();
-          
-          // Use throttled update for real-time sync
-          throttledTransformUpdate.current({
-            x: node.x(),
-            y: node.y(),
-            width: newWidth,
-            height: newHeight,
-            rotation: node.rotation(),
-            updatedAt: Date.now(),
-            updatedBy: currentUserId || 'local-user'
-          }, rectId);
-          
-          // Reset the scale to 1 to prevent accumulation
-          node.scaleX(1);
-          node.scaleY(1);
-        }
-      }
-    }
-  }, [selectionIds, rectangles, currentUserId]);
+  // Note: Real-time transform updates temporarily disabled to fix resize bug
+  // The handleTransform function was causing position conflicts during resize operations
 
   // Handle transformer changes (resize/rotate) - final update
   const handleTransformEnd = useCallback(async () => {
@@ -276,7 +248,7 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
             console.error('Failed to update rectangle transform:', err);
           }
           
-          // Reset the scale to 1 to prevent accumulation
+          // Reset the scale to 1 - Konva will handle position automatically
           node.scaleX(1);
           node.scaleY(1);
         }
@@ -513,7 +485,7 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
               }
               return newBox;
             }}
-            onTransform={handleTransform}
+            // onTransform={handleTransform} // Temporarily disabled to fix resize bug
             onTransformEnd={handleTransformEnd}
           />
         )}

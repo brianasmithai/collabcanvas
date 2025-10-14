@@ -342,18 +342,25 @@ tests/
 
 ---
 
-## PR 17 — UI/UX Polish
+## PR 17 — UI/UX Polish ✅ **COMPLETED**
 **Goal:** Improve debug panel and instructions presentation.
 
-- [ ] Add toggle for debug info (keyboard shortcut 'D' to show/hide)
+- [X] Add toggle for debug info (keyboard shortcut 'D' to show/hide)
   **Files:** `src/App.tsx` (edit)
-- [ ] Redesign instructions panel with better styling and layout
-  **Files:** `src/App.tsx` (edit), `src/App.css` (edit)
+- [X] Redesign instructions panel with better styling and layout
+  **Files:** `src/App.tsx` (edit)
 
 **Tests (bare‑bones):** Manual testing of debug toggle and instructions styling.
 
 **Automated Tests:**
-- [ ] Add `src/App.test.tsx` - Test debug panel toggle (keyboard shortcut 'D'), instructions panel visibility, keyboard events
+- [X] Add `tests/App.test.tsx` - Test debug panel toggle (keyboard shortcut 'D'), instructions panel visibility, keyboard events
+
+**Key Improvements:**
+- **Debug Panel Toggle**: Added keyboard shortcut 'D' to show/hide debug information
+- **Enhanced Styling**: Modern glass-morphism design with backdrop blur, improved typography, and better visual hierarchy
+- **Better UX**: Debug panel hidden by default, clean toggle mechanism, visual indicators
+- **Comprehensive Testing**: 7 new tests covering keyboard events, panel visibility, and content display
+- **Improved Instructions**: Better organized and styled instruction list with emojis and clear formatting
 
 ---
 

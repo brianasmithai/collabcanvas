@@ -13,6 +13,7 @@ function App() {
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 })
   const [user, setUser] = useState<User | null>(null)
   const [authLoading, setAuthLoading] = useState(true)
+  const [showDebugPanel, setShowDebugPanel] = useState(false)
   
   // Consume UI store for compile-time sanity
   const { toolMode, viewport, selectionIds } = useUIStore()
@@ -84,6 +85,20 @@ function App() {
     return () => clearInterval(cleanupInterval)
   }, [user])
 
+  // Handle keyboard shortcuts
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Toggle debug panel with 'D' key
+      if (e.key === 'd' || e.key === 'D') {
+        e.preventDefault()
+        setShowDebugPanel(prev => !prev)
+      }
+    }
+
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [])
+
   // Handle successful authentication
   const handleAuthSuccess = async (user: User) => {
     setUser(user)
@@ -143,25 +158,87 @@ function App() {
         userDisplayName={user.displayName || undefined}
       />
       
-      {/* Debug info panel */}
-      <div style={{ position: 'absolute', top: 70, left: 10, zIndex: 1000, background: 'white', padding: '10px', border: '1px solid #ccc', borderRadius: '5px' }}>
-        <div><strong>Canvas Debug Info:</strong></div>
-        <div>User: {user.email} ({user.displayName || 'No display name'})</div>
-        <div>Canvas: {dimensions.width} x {dimensions.height}</div>
-        <div>Viewport: scale={viewport.scale.toFixed(2)}, x={viewport.x.toFixed(0)}, y={viewport.y.toFixed(0)}</div>
-        <div>Tool: {toolMode}</div>
-        <div>Selection: {selectionIds.length} items</div>
-        <div style={{ marginTop: '10px', fontSize: '12px', color: '#666' }}>
-          <div>• Drag to pan around the canvas</div>
-          <div>• Mouse wheel to zoom in/out</div>
-          <div>• Click rectangles to select them</div>
-          <div>• Double-click empty space to create rectangle</div>
-          <div>• Press 'N' to create rectangle at center</div>
-          <div>• Drag rectangles to move them</div>
-          <div>• Use resize handles to resize/rotate</div>
-          <div>• Press Delete/Backspace to delete selected</div>
+      {/* Debug info panel - toggleable with 'D' key */}
+      {showDebugPanel && (
+        <div style={{ 
+          position: 'absolute', 
+          top: 70, 
+          left: 10, 
+          zIndex: 1000, 
+          background: 'rgba(255, 255, 255, 0.95)', 
+          padding: '16px', 
+          border: '1px solid #ddd', 
+          borderRadius: '8px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+          backdropFilter: 'blur(10px)',
+          minWidth: '280px',
+          fontFamily: 'system-ui, -apple-system, sans-serif'
+        }}>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            marginBottom: '12px',
+            borderBottom: '1px solid #eee',
+            paddingBottom: '8px'
+          }}>
+            <div style={{ fontWeight: '600', color: '#333', fontSize: '14px' }}>
+              🐛 Debug Info
+            </div>
+            <div style={{ 
+              fontSize: '11px', 
+              color: '#666', 
+              background: '#f5f5f5', 
+              padding: '2px 6px', 
+              borderRadius: '4px' 
+            }}>
+              Press 'D' to toggle
+            </div>
+          </div>
+          
+          <div style={{ fontSize: '13px', lineHeight: '1.4' }}>
+            <div style={{ marginBottom: '8px' }}>
+              <strong>User:</strong> {user.email} ({user.displayName || 'No display name'})
+            </div>
+            <div style={{ marginBottom: '8px' }}>
+              <strong>Canvas:</strong> {dimensions.width} × {dimensions.height}
+            </div>
+            <div style={{ marginBottom: '8px' }}>
+              <strong>Viewport:</strong> scale={viewport.scale.toFixed(2)}, x={viewport.x.toFixed(0)}, y={viewport.y.toFixed(0)}
+            </div>
+            <div style={{ marginBottom: '8px' }}>
+              <strong>Tool:</strong> {toolMode}
+            </div>
+            <div style={{ marginBottom: '12px' }}>
+              <strong>Selection:</strong> {selectionIds.length} items
+            </div>
+          </div>
+          
+          <div style={{ 
+            marginTop: '12px', 
+            paddingTop: '12px',
+            borderTop: '1px solid #eee',
+            fontSize: '12px', 
+            color: '#555',
+            lineHeight: '1.5'
+          }}>
+            <div style={{ fontWeight: '600', marginBottom: '6px', color: '#333' }}>
+              📋 Instructions:
+            </div>
+            <div>• Drag to pan around the canvas</div>
+            <div>• Mouse wheel to zoom in/out</div>
+            <div>• Click rectangles to select them</div>
+            <div>• Double-click empty space to create rectangle</div>
+            <div>• Press 'N' to create rectangle at center</div>
+            <div>• Drag rectangles to move them</div>
+            <div>• Use resize handles to resize/rotate</div>
+            <div>• Press Delete/Backspace to delete selected</div>
+            <div style={{ marginTop: '6px', color: '#888' }}>
+              • Press 'D' to toggle this panel
+            </div>
+          </div>
         </div>
-      </div>
+      )}
       
       {/* Presence list */}
       <div style={{ position: 'absolute', top: 70, right: 10, zIndex: 1000 }}>
