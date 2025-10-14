@@ -51,12 +51,7 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
     });
   }, [viewport, updateViewport]);
 
-  // Handle drag start (panning)
-  const handleDragStart = useCallback(() => {
-    isDragging.current = true;
-  }, []);
-
-  // Handle mouse down to detect potential drag start
+  // Handle mouse down to detect potential drag start (only for canvas panning)
   const handleMouseDown = useCallback((e: any) => {
     // Only set dragging if clicking on empty space (not on rectangles)
     if (e.target === e.target.getStage()) {
@@ -466,7 +461,6 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
       onMouseUp={handleMouseUp}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
-      onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onClick={handleStageClick}
       onTap={handleStageClick}
