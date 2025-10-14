@@ -9,7 +9,7 @@ import {
   query, 
   orderBy,
   serverTimestamp,
-  Timestamp 
+  getDoc
 } from 'firebase/firestore';
 import { firestore } from '../config/firebaseClient';
 import type { Rect } from '../types';
@@ -113,7 +113,7 @@ export const subscribeToRectangles = (
     (snapshot) => {
       const rectangles: Rect[] = [];
       snapshot.forEach((doc) => {
-        rectangles.push(doc.data());
+        rectangles.push({ ...doc.data(), id: doc.id });
       });
       onUpdate(rectangles);
     },
@@ -131,6 +131,6 @@ export const subscribeToRectangles = (
  */
 export const getRectangle = async (id: string): Promise<Rect | null> => {
   const rectRef = doc(firestore, RECTANGLES_COLLECTION, id).withConverter(rectConverter);
-  const snapshot = await rectRef.get();
-  return snapshot.exists() ? snapshot.data() : null;
+  const snapshot = await getDoc(rectRef);
+  return snapshot.exists() ? { ...snapshot.data(), id: snapshot.id } : null;
 };

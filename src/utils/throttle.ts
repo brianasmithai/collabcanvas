@@ -12,7 +12,7 @@ export function throttle<T extends (...args: any[]) => any>(
   delay: number
 ): (...args: Parameters<T>) => void {
   let lastCallTime = 0;
-  let timeoutId: NodeJS.Timeout | null = null;
+  let timeoutId: number | null = null;
   let lastArgs: Parameters<T> | null = null;
 
   const throttled = (...args: Parameters<T>) => {
@@ -78,7 +78,7 @@ export function debounce<T extends (...args: any[]) => any>(
   func: T,
   delay: number
 ): (...args: Parameters<T>) => void {
-  let timeoutId: NodeJS.Timeout | null = null;
+  let timeoutId: number | null = null;
 
   const debounced = (...args: Parameters<T>) => {
     if (timeoutId) {
@@ -145,7 +145,7 @@ export function throttleTrailing<T extends (...args: any[]) => any>(
   func: T,
   delay: number
 ): (...args: Parameters<T>) => void {
-  let timeoutId: NodeJS.Timeout | null = null;
+  let timeoutId: number | null = null;
   let lastArgs: Parameters<T> | null = null;
 
   const throttled = (...args: Parameters<T>) => {

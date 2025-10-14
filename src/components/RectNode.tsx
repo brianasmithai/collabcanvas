@@ -1,5 +1,5 @@
 // Rectangle Node component for rendering individual rectangles
-import { forwardRef, useCallback, useRef } from 'react';
+import { forwardRef, useRef } from 'react';
 import { Rect as KonvaRect } from 'react-konva';
 import { throttle } from '../utils/throttle';
 import type { Rect } from '../types';

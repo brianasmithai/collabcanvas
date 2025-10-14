@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { onAuthStateChanged, User } from 'firebase/auth'
+import { onAuthStateChanged, type User } from 'firebase/auth'
 import { auth } from './config/firebaseClient'
 import { setInitialPresence } from './services/presence'
 import './App.css'
@@ -127,14 +127,14 @@ function App() {
       
       {/* Presence list */}
       <div style={{ position: 'absolute', top: 10, right: 10, zIndex: 1000 }}>
-        <PresenceList currentUserId={currentUserId} />
+        <PresenceList currentUserId={currentUserId || undefined} />
       </div>
       
       {/* Canvas stage */}
       <CanvasStage 
         width={dimensions.width} 
         height={dimensions.height} 
-        currentUserId={currentUserId}
+        currentUserId={currentUserId || undefined}
       />
     </div>
   )

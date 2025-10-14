@@ -1,5 +1,5 @@
 // Canvas Stage component with Konva for 2D canvas interactions
-import React, { useRef, useCallback, useState, useEffect } from 'react';
+import React, { useRef, useCallback, useEffect } from 'react';
 import { Stage, Layer, Transformer, Text } from 'react-konva';
 import { useUIStore } from '../state/uiStore';
 import { getZoomFactor, screenToWorld } from '../utils/geometry';

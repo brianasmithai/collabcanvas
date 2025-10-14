@@ -1,5 +1,5 @@
 // Presence service for real-time user presence and cursor tracking
-import { ref, set, onDisconnect, serverTimestamp, push, remove } from 'firebase/database';
+import { ref, set, onDisconnect, remove } from 'firebase/database';
 import { rtdb } from '../config/firebaseClient';
 import type { Presence } from '../types';
 

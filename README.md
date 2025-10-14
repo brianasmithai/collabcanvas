@@ -208,9 +208,151 @@ To verify the collaborative features work correctly, follow these steps:
 - ✅ Loading states show during initial load
 - ✅ Empty state shows helpful message when no rectangles exist
 
+## Deployment to Vercel
+
+### Prerequisites for Deployment
+
+1. **Vercel Account**: Sign up at [vercel.com](https://vercel.com) (free tier available)
+2. **GitHub Repository**: Your code should be pushed to GitHub
+3. **Firebase Project**: Already configured (see Firebase Setup above)
+
+### Step 1: Prepare Your Repository
+
+1. **Push your code to GitHub** (if not already done):
+   ```bash
+   git add .
+   git commit -m "Ready for deployment"
+   git push origin main
+   ```
+
+2. **Create `.env.local` file** in your project root with your Firebase configuration:
+   ```env
+   VITE_FIREBASE_API_KEY=your_api_key
+   VITE_FIREBASE_AUTH_DOMAIN=your_project.firebaseapp.com
+   VITE_FIREBASE_PROJECT_ID=your_project_id
+   VITE_FIREBASE_STORAGE_BUCKET=your_project.appspot.com
+   VITE_FIREBASE_MESSAGING_SENDER_ID=your_sender_id
+   VITE_FIREBASE_APP_ID=your_app_id
+   VITE_FIREBASE_DATABASE_URL=https://your_project-default-rtdb.firebaseio.com
+   ```
+
+### Step 2: Deploy to Vercel
+
+#### Option A: Deploy via Vercel Dashboard (Recommended for first-time setup)
+
+1. **Go to [vercel.com](https://vercel.com)** and sign in
+2. **Click "New Project"**
+3. **Import your GitHub repository**:
+   - Select your GitHub account
+   - Find and select your `collabcanvas` repository
+   - Click "Import"
+
+4. **Configure the project**:
+   - **Framework Preset**: Vite
+   - **Root Directory**: `./` (default)
+   - **Build Command**: `npm run build` (should auto-detect)
+   - **Output Directory**: `dist` (should auto-detect)
+   - **Install Command**: `npm install` (should auto-detect)
+
+5. **Add Environment Variables**:
+   - Click "Environment Variables" section
+   - Add each Firebase environment variable:
+     - `VITE_FIREBASE_API_KEY` = `your_api_key`
+     - `VITE_FIREBASE_AUTH_DOMAIN` = `your_project.firebaseapp.com`
+     - `VITE_FIREBASE_PROJECT_ID` = `your_project_id`
+     - `VITE_FIREBASE_STORAGE_BUCKET` = `your_project.appspot.com`
+     - `VITE_FIREBASE_MESSAGING_SENDER_ID` = `your_sender_id`
+     - `VITE_FIREBASE_APP_ID` = `your_app_id`
+     - `VITE_FIREBASE_DATABASE_URL` = `https://your_project-default-rtdb.firebaseio.com`
+
+6. **Deploy**:
+   - Click "Deploy"
+   - Wait for the build to complete (usually 1-2 minutes)
+   - Your app will be available at `https://your-project-name.vercel.app`
+
+#### Option B: Deploy via Vercel CLI
+
+1. **Install Vercel CLI**:
+   ```bash
+   npm i -g vercel
+   ```
+
+2. **Login to Vercel**:
+   ```bash
+   vercel login
+   ```
+
+3. **Deploy from your project directory**:
+   ```bash
+   vercel
+   ```
+
+4. **Follow the prompts**:
+   - Link to existing project or create new one
+   - Set up environment variables when prompted
+
+### Step 3: Verify Deployment
+
+After deployment, test your application:
+
+1. **Open your Vercel URL** in a browser
+2. **Test authentication**:
+   - Create a new account
+   - Sign in with existing account
+3. **Test collaboration**:
+   - Open the app in two different browsers
+   - Create rectangles in one browser
+   - Verify they appear in the other browser
+4. **Test persistence**:
+   - Create some rectangles
+   - Refresh the page
+   - Verify rectangles persist
+
+### Step 4: Configure Custom Domain (Optional)
+
+1. **In Vercel Dashboard**:
+   - Go to your project
+   - Click "Settings" → "Domains"
+   - Add your custom domain
+   - Follow DNS configuration instructions
+
+### Environment Variables Reference
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `VITE_FIREBASE_API_KEY` | Firebase API key | `AIzaSyC...` |
+| `VITE_FIREBASE_AUTH_DOMAIN` | Firebase auth domain | `myproject.firebaseapp.com` |
+| `VITE_FIREBASE_PROJECT_ID` | Firebase project ID | `myproject-12345` |
+| `VITE_FIREBASE_STORAGE_BUCKET` | Firebase storage bucket | `myproject.appspot.com` |
+| `VITE_FIREBASE_MESSAGING_SENDER_ID` | Firebase messaging sender ID | `123456789` |
+| `VITE_FIREBASE_APP_ID` | Firebase app ID | `1:123456789:web:abc123` |
+| `VITE_FIREBASE_DATABASE_URL` | Realtime Database URL | `https://myproject-default-rtdb.firebaseio.com` |
+
+### Troubleshooting
+
+**Build Fails:**
+- Check that all environment variables are set correctly
+- Verify your Firebase configuration is valid
+- Check the build logs in Vercel dashboard
+
+**App Doesn't Load:**
+- Verify Firebase project is properly configured
+- Check browser console for errors
+- Ensure all Firebase services are enabled
+
+**Authentication Issues:**
+- Verify Firebase Auth is enabled
+- Check that email/password authentication is enabled
+- Verify auth domain is configured correctly
+
+**Real-time Features Not Working:**
+- Check that Firestore and Realtime Database are enabled
+- Verify security rules are properly configured
+- Check browser console for Firebase errors
+
 ## Project Status
 
-🚧 **Currently in MVP development** - This is a work in progress. See the [tasks documentation](docs/tasks.md) for current progress and roadmap.
+✅ **MVP Complete** - Core features implemented and deployed. See the [tasks documentation](docs/tasks.md) for completed features.
 
 ## License
 

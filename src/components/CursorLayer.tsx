@@ -3,7 +3,6 @@ import React from 'react';
 import { Layer, Circle, Text, Group } from 'react-konva';
 import { usePresence } from '../hooks/usePresence';
 import { useUIStore } from '../state/uiStore';
-import type { PresenceMap } from '../hooks/usePresence';
 
 // Predefined colors for user cursors
 const USER_COLORS = [
