@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { onAuthStateChanged, type User } from 'firebase/auth'
 import { auth } from './config/firebaseClient'
-import { setInitialPresence, removePresence, cleanupStalePresence } from './services/presence'
+import { setInitialPresence, cleanupStalePresence } from './services/presence'
 import './App.css'
 import { useUIStore } from './state/uiStore'
 import { CanvasStage } from './components/CanvasStage'

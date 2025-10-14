@@ -381,6 +381,12 @@ tests/
   - **Impact**: Medium - affects user experience but doesn't break core functionality
   - **Priority**: High for next release
   - **Files**: `src/services/presence.ts`, `src/hooks/usePresence.ts`, `src/components/TopBar.tsx`
+- [X] **Unknown User issue**: Users showing as "Unknown User" when reconnecting ✅ **FIXED in PR 16 bug fix**
+  - **Impact**: High - affects user identification and collaboration experience
+  - **Priority**: High for next release
+  - **Files**: `src/services/presence.ts`, `tests/presence.service.test.ts`
+  - **Root Cause**: `updateCursor` and `updateSelection` functions not preserving user name/displayName fields
+  - **Solution**: Modified functions to fetch and preserve existing user data during updates
 
 ### Future Enhancements
 - [ ] Add more shape types (circles, lines, text)

@@ -45,13 +45,23 @@ export const setInitialPresence = async (uid: string, displayName: string) => {
  * @param cursor - New cursor position
  */
 export const updateCursor = async (uid: string, cursor: { x: number; y: number }) => {
-  const cursorRef = ref(rtdb, `presence/${uid}/cursor`);
-  await set(cursorRef, cursor);
+  // Get current user data to preserve name/displayName
+  const presenceRef = ref(rtdb, `presence/${uid}`);
+  const snapshot = await get(presenceRef);
+  const currentData = snapshot.val();
   
-  // Also update the timestamp
-  const timestampRef = ref(rtdb, `presence/${uid}/updatedAt`);
-  await set(timestampRef, Date.now());
-  console.log('✅ Cursor updated successfully');
+  // Ensure name and displayName are preserved
+  const updatedData = {
+    ...currentData,
+    cursor: cursor,
+    updatedAt: Date.now(),
+    // Preserve existing name/displayName or set defaults
+    name: currentData?.name || 'User',
+    displayName: currentData?.displayName || currentData?.name || 'User'
+  };
+  
+  await set(presenceRef, updatedData);
+  console.log('✅ Cursor updated successfully with preserved user data');
 };
 
 /**
@@ -60,12 +70,23 @@ export const updateCursor = async (uid: string, cursor: { x: number; y: number }
  * @param selectionIds - Array of selected rectangle IDs
  */
 export const updateSelection = async (uid: string, selectionIds: string[]) => {
-  const selectionRef = ref(rtdb, `presence/${uid}/selectionIds`);
-  await set(selectionRef, selectionIds);
+  // Get current user data to preserve name/displayName
+  const presenceRef = ref(rtdb, `presence/${uid}`);
+  const snapshot = await get(presenceRef);
+  const currentData = snapshot.val();
   
-  // Also update the timestamp
-  const timestampRef = ref(rtdb, `presence/${uid}/updatedAt`);
-  await set(timestampRef, Date.now());
+  // Ensure name and displayName are preserved
+  const updatedData = {
+    ...currentData,
+    selectionIds: selectionIds,
+    updatedAt: Date.now(),
+    // Preserve existing name/displayName or set defaults
+    name: currentData?.name || 'User',
+    displayName: currentData?.displayName || currentData?.name || 'User'
+  };
+  
+  await set(presenceRef, updatedData);
+  console.log('✅ Selection updated successfully with preserved user data');
 };
 
 /**

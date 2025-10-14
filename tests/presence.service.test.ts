@@ -81,39 +81,65 @@ describe('Presence Service', () => {
   });
 
   describe('updateCursor', () => {
-    it('should update cursor position and timestamp', async () => {
-      const { set } = await import('firebase/database');
+    it('should update cursor position and preserve user data', async () => {
+      const { set, get } = await import('firebase/database');
       const uid = 'user-789';
       const cursor = { x: 150, y: 250 };
 
+      // Mock get to return existing user data
+      (get as any).mockResolvedValue({
+        val: () => ({
+          name: 'Test User',
+          displayName: 'Test User',
+          cursor: { x: 100, y: 200 },
+          selectionIds: ['rect1']
+        })
+      });
+
       await updateCursor(uid, cursor);
 
+      expect(get).toHaveBeenCalledWith({ _path: `presence/${uid}` });
       expect(set).toHaveBeenCalledWith(
-        { _path: `presence/${uid}/cursor` },
-        cursor
-      );
-      expect(set).toHaveBeenCalledWith(
-        { _path: `presence/${uid}/updatedAt` },
-        expect.any(Number)
+        { _path: `presence/${uid}` },
+        expect.objectContaining({
+          name: 'Test User',
+          displayName: 'Test User',
+          cursor: { x: 150, y: 250 },
+          selectionIds: ['rect1'],
+          updatedAt: expect.any(Number)
+        })
       );
     });
   });
 
   describe('updateSelection', () => {
-    it('should update selection IDs and timestamp', async () => {
-      const { set } = await import('firebase/database');
+    it('should update selection IDs and preserve user data', async () => {
+      const { set, get } = await import('firebase/database');
       const uid = 'user-101';
       const selectionIds = ['rect-3', 'rect-4'];
 
+      // Mock get to return existing user data
+      (get as any).mockResolvedValue({
+        val: () => ({
+          name: 'Test User',
+          displayName: 'Test User',
+          cursor: { x: 100, y: 200 },
+          selectionIds: ['rect1']
+        })
+      });
+
       await updateSelection(uid, selectionIds);
 
+      expect(get).toHaveBeenCalledWith({ _path: `presence/${uid}` });
       expect(set).toHaveBeenCalledWith(
-        { _path: `presence/${uid}/selectionIds` },
-        selectionIds
-      );
-      expect(set).toHaveBeenCalledWith(
-        { _path: `presence/${uid}/updatedAt` },
-        expect.any(Number)
+        { _path: `presence/${uid}` },
+        expect.objectContaining({
+          name: 'Test User',
+          displayName: 'Test User',
+          cursor: { x: 100, y: 200 },
+          selectionIds: ['rect-3', 'rect-4'],
+          updatedAt: expect.any(Number)
+        })
       );
     });
   });
