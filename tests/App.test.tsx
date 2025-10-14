@@ -89,6 +89,17 @@ describe('App', () => {
     expect(screen.queryByText('🐛 Debug Info')).not.toBeInTheDocument();
   });
 
+  it('should show instructions panel by default', async () => {
+    render(<App />);
+    
+    // Wait for auth to complete
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    // Instructions panel should be visible initially
+    expect(screen.getByText('📋 Instructions')).toBeInTheDocument();
+    expect(screen.getByText('Press \'I\' to toggle')).toBeInTheDocument();
+  });
+
   it('should toggle debug panel when D key is pressed', async () => {
     render(<App />);
     
@@ -142,17 +153,14 @@ describe('App', () => {
     expect(screen.getByText(/Selection:/)).toBeInTheDocument();
   });
 
-  it('should show instructions when debug panel is visible', async () => {
+  it('should show instructions in instructions panel', async () => {
     render(<App />);
     
     // Wait for auth to complete
     await new Promise(resolve => setTimeout(resolve, 100));
     
-    // Toggle debug panel
-    fireEvent.keyDown(document, { key: 'D' });
-    
-    // Check for instructions
-    expect(screen.getByText('📋 Instructions:')).toBeInTheDocument();
+    // Instructions panel should be visible by default
+    expect(screen.getByText('📋 Instructions')).toBeInTheDocument();
     expect(screen.getByText('• Drag to pan around the canvas')).toBeInTheDocument();
     expect(screen.getByText('• Mouse wheel to zoom in/out')).toBeInTheDocument();
     expect(screen.getByText('• Click rectangles to select them')).toBeInTheDocument();
@@ -161,10 +169,46 @@ describe('App', () => {
     expect(screen.getByText('• Drag rectangles to move them')).toBeInTheDocument();
     expect(screen.getByText('• Use resize handles to resize/rotate')).toBeInTheDocument();
     expect(screen.getByText('• Press Delete/Backspace to delete selected')).toBeInTheDocument();
-    expect(screen.getByText('• Press \'D\' to toggle this panel')).toBeInTheDocument();
+    expect(screen.getByText('• Press \'I\' to toggle instructions')).toBeInTheDocument();
+    expect(screen.getByText('• Press \'D\' to toggle debug info')).toBeInTheDocument();
   });
 
-  it('should not toggle debug panel for other keys', async () => {
+  it('should toggle instructions panel when I key is pressed', async () => {
+    render(<App />);
+    
+    // Wait for auth to complete
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    // Initially visible
+    expect(screen.getByText('📋 Instructions')).toBeInTheDocument();
+    
+    // Press 'I' key
+    fireEvent.keyDown(document, { key: 'I' });
+    
+    // Should now be hidden
+    expect(screen.queryByText('📋 Instructions')).not.toBeInTheDocument();
+    
+    // Press 'I' key again
+    fireEvent.keyDown(document, { key: 'I' });
+    
+    // Should be visible again
+    expect(screen.getByText('📋 Instructions')).toBeInTheDocument();
+  });
+
+  it('should toggle instructions panel when lowercase i key is pressed', async () => {
+    render(<App />);
+    
+    // Wait for auth to complete
+    await new Promise(resolve => setTimeout(resolve, 100));
+    
+    // Press lowercase 'i' key
+    fireEvent.keyDown(document, { key: 'i' });
+    
+    // Should be hidden
+    expect(screen.queryByText('📋 Instructions')).not.toBeInTheDocument();
+  });
+
+  it('should not toggle panels for other keys', async () => {
     render(<App />);
     
     // Wait for auth to complete
@@ -178,5 +222,7 @@ describe('App', () => {
     
     // Debug panel should still be hidden
     expect(screen.queryByText('🐛 Debug Info')).not.toBeInTheDocument();
+    // Instructions panel should still be visible
+    expect(screen.getByText('📋 Instructions')).toBeInTheDocument();
   });
 });

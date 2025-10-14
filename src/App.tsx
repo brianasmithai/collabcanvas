@@ -14,6 +14,7 @@ function App() {
   const [user, setUser] = useState<User | null>(null)
   const [authLoading, setAuthLoading] = useState(true)
   const [showDebugPanel, setShowDebugPanel] = useState(false)
+  const [showInstructionsPanel, setShowInstructionsPanel] = useState(true)
   
   // Consume UI store for compile-time sanity
   const { toolMode, viewport, selectionIds } = useUIStore()
@@ -93,6 +94,11 @@ function App() {
         e.preventDefault()
         setShowDebugPanel(prev => !prev)
       }
+      // Toggle instructions panel with 'I' key
+      if (e.key === 'i' || e.key === 'I') {
+        e.preventDefault()
+        setShowInstructionsPanel(prev => !prev)
+      }
     }
 
     window.addEventListener('keydown', handleKeyDown)
@@ -158,12 +164,73 @@ function App() {
         userDisplayName={user.displayName || undefined}
       />
       
+      {/* Instructions panel - toggleable with 'I' key */}
+      {showInstructionsPanel && (
+        <div style={{ 
+          position: 'absolute', 
+          top: 70, 
+          left: 10, 
+          zIndex: 1000, 
+          background: 'rgba(255, 255, 255, 0.95)', 
+          padding: '16px', 
+          border: '1px solid #ddd', 
+          borderRadius: '8px',
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
+          backdropFilter: 'blur(10px)',
+          minWidth: '280px',
+          fontFamily: 'system-ui, -apple-system, sans-serif'
+        }}>
+          <div style={{ 
+            display: 'flex', 
+            justifyContent: 'space-between', 
+            alignItems: 'center', 
+            marginBottom: '12px',
+            borderBottom: '1px solid #eee',
+            paddingBottom: '8px'
+          }}>
+            <div style={{ fontWeight: '600', color: '#333', fontSize: '14px' }}>
+              📋 Instructions
+            </div>
+            <div style={{ 
+              fontSize: '11px', 
+              color: '#666', 
+              background: '#f5f5f5', 
+              padding: '2px 6px', 
+              borderRadius: '4px' 
+            }}>
+              Press 'I' to toggle
+            </div>
+          </div>
+          
+          <div style={{ 
+            fontSize: '12px', 
+            color: '#555',
+            lineHeight: '1.5'
+          }}>
+            <div>• Drag to pan around the canvas</div>
+            <div>• Mouse wheel to zoom in/out</div>
+            <div>• Click rectangles to select them</div>
+            <div>• Double-click empty space to create rectangle</div>
+            <div>• Press 'N' to create rectangle at center</div>
+            <div>• Drag rectangles to move them</div>
+            <div>• Use resize handles to resize/rotate</div>
+            <div>• Press Delete/Backspace to delete selected</div>
+            <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #eee', color: '#888' }}>
+              • Press 'I' to toggle instructions
+            </div>
+            <div style={{ color: '#888' }}>
+              • Press 'D' to toggle debug info
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Debug info panel - toggleable with 'D' key */}
       {showDebugPanel && (
         <div style={{ 
           position: 'absolute', 
           top: 70, 
-          left: 10, 
+          left: showInstructionsPanel ? '310px' : '10px', 
           zIndex: 1000, 
           background: 'rgba(255, 255, 255, 0.95)', 
           padding: '16px', 
@@ -209,32 +276,8 @@ function App() {
             <div style={{ marginBottom: '8px' }}>
               <strong>Tool:</strong> {toolMode}
             </div>
-            <div style={{ marginBottom: '12px' }}>
+            <div style={{ marginBottom: '8px' }}>
               <strong>Selection:</strong> {selectionIds.length} items
-            </div>
-          </div>
-          
-          <div style={{ 
-            marginTop: '12px', 
-            paddingTop: '12px',
-            borderTop: '1px solid #eee',
-            fontSize: '12px', 
-            color: '#555',
-            lineHeight: '1.5'
-          }}>
-            <div style={{ fontWeight: '600', marginBottom: '6px', color: '#333' }}>
-              📋 Instructions:
-            </div>
-            <div>• Drag to pan around the canvas</div>
-            <div>• Mouse wheel to zoom in/out</div>
-            <div>• Click rectangles to select them</div>
-            <div>• Double-click empty space to create rectangle</div>
-            <div>• Press 'N' to create rectangle at center</div>
-            <div>• Drag rectangles to move them</div>
-            <div>• Use resize handles to resize/rotate</div>
-            <div>• Press Delete/Backspace to delete selected</div>
-            <div style={{ marginTop: '6px', color: '#888' }}>
-              • Press 'D' to toggle this panel
             </div>
           </div>
         </div>
