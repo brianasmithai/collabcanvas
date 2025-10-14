@@ -10,9 +10,6 @@ export interface Rect {
   rotation: number; // degrees
   updatedAt: number; // ms since epoch
   updatedBy: string; // Firebase Auth uid
-  // Optional scale values for real-time transform sync
-  scaleX?: number;
-  scaleY?: number;
 }
 
 // User presence interface (Realtime Database)

@@ -234,6 +234,12 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
           const newWidth = node.width() * node.scaleX();
           const newHeight = node.height() * node.scaleY();
           
+          // Update the node immediately to prevent flicker
+          node.width(newWidth);
+          node.height(newHeight);
+          node.scaleX(1);
+          node.scaleY(1);
+          
           try {
             await updateRect(rectId, {
               x: node.x(),
@@ -247,10 +253,6 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
           } catch (err) {
             console.error('Failed to update rectangle transform:', err);
           }
-          
-          // Reset the scale to 1 - Konva will handle position automatically
-          node.scaleX(1);
-          node.scaleY(1);
         }
       }
     }
