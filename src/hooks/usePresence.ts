@@ -1,0 +1,59 @@
+// Hook for subscribing to real-time presence data
+import { useEffect, useState } from 'react';
+import { ref, onValue, off } from 'firebase/database';
+import { rtdb } from '../config/firebaseClient';
+import type { Presence } from '../types';
+
+// Map of user ID to presence data
+export type PresenceMap = Record<string, Presence>;
+
+/**
+ * Hook to subscribe to real-time presence data from Firebase Realtime Database
+ * @returns Map of user IDs to their presence data
+ */
+export const usePresence = (): PresenceMap => {
+  const [presenceMap, setPresenceMap] = useState<PresenceMap>({});
+
+  useEffect(() => {
+    const presenceRef = ref(rtdb, 'presence');
+    
+    console.log('🔗 usePresence: Setting up Firebase presence subscription');
+    
+    const unsubscribe = onValue(presenceRef, (snapshot) => {
+      const data = snapshot.val();
+      
+      if (data) {
+        // Convert Firebase data to our presence map
+        const presence: PresenceMap = {};
+        Object.keys(data).forEach((uid) => {
+          const userPresence = data[uid];
+          if (userPresence) {
+            presence[uid] = {
+              name: userPresence.name || 'Unknown User',
+              displayName: userPresence.displayName || userPresence.name || 'Unknown User',
+              cursor: userPresence.cursor || { x: 0, y: 0 },
+              selectionIds: userPresence.selectionIds || [],
+              updatedAt: userPresence.updatedAt || Date.now(),
+            };
+          }
+        });
+        console.log('👥 usePresence: Received presence data:', presence);
+        setPresenceMap(presence);
+      } else {
+        // No presence data
+        console.log('👥 usePresence: No presence data found');
+        setPresenceMap({});
+      }
+    }, (error) => {
+      console.error('Error listening to presence:', error);
+      setPresenceMap({});
+    });
+
+    // Cleanup subscription on unmount
+    return () => {
+      off(presenceRef, 'value', unsubscribe);
+    };
+  }, []);
+
+  return presenceMap;
+};
