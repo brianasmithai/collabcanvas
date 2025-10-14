@@ -94,15 +94,15 @@ tests/
 ## PR 3 — Core Types & Zustand Store
 **Goal:** Define domain types and minimal UI state.
 
-- [ ] Define `Rect` and `Presence` interfaces  
+- [X] Define `Rect` and `Presence` interfaces  
   **Files:** `src/types.ts` (new)
-- [ ] Create `uiStore` (tool mode, zoom, selectionIds)  
+- [X] Create `uiStore` (tool mode, zoom, selectionIds)  
   **Files:** `src/state/uiStore.ts` (new)
-- [ ] Consume store in `App.tsx` for compile-time sanity (no UI change)  
+- [X] Consume store in `App.tsx` for compile-time sanity (no UI change)  
   **Files:** `src/App.tsx` (edit)
 
 **Tests (bare‑bones):** Verify store basics (setters update state).  
-- [ ] Add `uiStore.test.ts` with minimal actions/asserts  
+- [X] Add `uiStore.test.ts` with minimal actions/asserts  
   **Files:** `tests/uiStore.test.ts` (new), `package.json` (edit: add `test` script if missing)
 
 ---
