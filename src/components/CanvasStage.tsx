@@ -290,6 +290,31 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
     }
   }, [currentUserId, viewport]);
 
+  // Global mouse move handler for cursor tracking during drag/transform
+  const handleGlobalMouseMove = useCallback((e: MouseEvent) => {
+    if (!currentUserId || !throttledCursorUpdate.current || !viewport || !stageRef.current) return;
+    
+    const stage = stageRef.current;
+    const stageBox = stage.container().getBoundingClientRect();
+    
+    // Calculate mouse position relative to the stage
+    const mouseX = e.clientX - stageBox.left;
+    const mouseY = e.clientY - stageBox.top;
+    
+    // Convert screen coordinates to world coordinates
+    const worldPos = screenToWorld(mouseX, mouseY, viewport);
+    console.log('🖱️ Global cursor move:', { x: worldPos.x, y: worldPos.y, userId: currentUserId });
+    throttledCursorUpdate.current(worldPos.x, worldPos.y);
+  }, [currentUserId, viewport]);
+
+  // Global mouse move listener for cursor tracking during drag/transform
+  useEffect(() => {
+    if (currentUserId && throttledCursorUpdate.current) {
+      window.addEventListener('mousemove', handleGlobalMouseMove);
+      return () => window.removeEventListener('mousemove', handleGlobalMouseMove);
+    }
+  }, [currentUserId, handleGlobalMouseMove]);
+
   // Handle mouse leave to clear cursor position
   const handleMouseLeave = useCallback(() => {
     if (!currentUserId || !throttledCursorUpdate.current) return;
