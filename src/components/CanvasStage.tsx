@@ -51,6 +51,19 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
     });
   }, [viewport, updateViewport]);
 
+  // Handle drag start (panning)
+  const handleDragStart = useCallback(() => {
+    isDragging.current = true;
+  }, []);
+
+  // Handle mouse down to detect potential drag start
+  const handleMouseDown = useCallback((e: any) => {
+    // Only set dragging if clicking on empty space (not on rectangles)
+    if (e.target === e.target.getStage()) {
+      isDragging.current = true;
+    }
+  }, []);
+
   // Handle drag to pan
   const handleDragEnd = useCallback(() => {
     const stage = stageRef.current;
@@ -61,7 +74,14 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
       x: newPos.x,
       y: newPos.y,
     });
+    
+    isDragging.current = false;
   }, [updateViewport]);
+
+  // Handle mouse up to reset drag state
+  const handleMouseUp = useCallback(() => {
+    isDragging.current = false;
+  }, []);
 
   // Handle stage click (deselect all)
   const handleStageClick = useCallback((e: any) => {
@@ -208,6 +228,11 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
     }, 100); // Throttle to 10 updates per second
   }
 
+  // Track last mouse position to detect actual mouse movement
+  const lastMousePosition = useRef<{ x: number; y: number } | null>(null);
+  const lastWorldPosition = useRef<{ x: number; y: number } | null>(null);
+  const isDragging = useRef<boolean>(false);
+
   // Handle transformer changes (resize/rotate)
   const handleTransformEnd = useCallback(async () => {
     if (transformerRef.current && selectionIds.length > 0) {
@@ -277,21 +302,41 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
 
   // Handle mouse movement for cursor tracking
   const handleMouseMove = useCallback((e: any) => {
-    if (!currentUserId || !throttledCursorUpdate.current || !viewport) return;
+    if (!currentUserId || !throttledCursorUpdate.current || !viewport || isDragging.current) return;
     
     const stage = e.target.getStage();
     const pointerPosition = stage.getPointerPosition();
     
     if (pointerPosition) {
-      // Convert screen coordinates to world coordinates
-      const worldPos = screenToWorld(pointerPosition.x, pointerPosition.y, viewport);
-      throttledCursorUpdate.current(worldPos.x, worldPos.y);
+      // Check if mouse actually moved (not just canvas panning)
+      const currentMousePos = { x: pointerPosition.x, y: pointerPosition.y };
+      const lastPos = lastMousePosition.current;
+      
+      if (!lastPos || 
+          Math.abs(currentMousePos.x - lastPos.x) > 1 || 
+          Math.abs(currentMousePos.y - lastPos.y) > 1) {
+        
+        // Mouse actually moved, update cursor position
+        const worldPos = screenToWorld(pointerPosition.x, pointerPosition.y, viewport);
+        
+        // Only update if world position actually changed
+        const lastWorldPos = lastWorldPosition.current;
+        if (!lastWorldPos || 
+            Math.abs(worldPos.x - lastWorldPos.x) > 0.1 || 
+            Math.abs(worldPos.y - lastWorldPos.y) > 0.1) {
+          
+          throttledCursorUpdate.current(worldPos.x, worldPos.y);
+          lastWorldPosition.current = worldPos;
+        }
+        
+        lastMousePosition.current = currentMousePos;
+      }
     }
   }, [currentUserId, viewport]);
 
   // Global mouse move handler for cursor tracking during drag/transform
   const handleGlobalMouseMove = useCallback((e: MouseEvent) => {
-    if (!currentUserId || !throttledCursorUpdate.current || !viewport || !stageRef.current) return;
+    if (!currentUserId || !throttledCursorUpdate.current || !viewport || !stageRef.current || isDragging.current) return;
     
     const stage = stageRef.current;
     const stageBox = stage.container().getBoundingClientRect();
@@ -300,9 +345,29 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
     const mouseX = e.clientX - stageBox.left;
     const mouseY = e.clientY - stageBox.top;
     
-    // Convert screen coordinates to world coordinates
-    const worldPos = screenToWorld(mouseX, mouseY, viewport);
-    throttledCursorUpdate.current(worldPos.x, worldPos.y);
+    // Check if mouse actually moved (not just canvas panning)
+    const currentMousePos = { x: mouseX, y: mouseY };
+    const lastPos = lastMousePosition.current;
+    
+    if (!lastPos || 
+        Math.abs(currentMousePos.x - lastPos.x) > 1 || 
+        Math.abs(currentMousePos.y - lastPos.y) > 1) {
+      
+      // Mouse actually moved, update cursor position
+      const worldPos = screenToWorld(mouseX, mouseY, viewport);
+      
+      // Only update if world position actually changed
+      const lastWorldPos = lastWorldPosition.current;
+      if (!lastWorldPos || 
+          Math.abs(worldPos.x - lastWorldPos.x) > 0.1 || 
+          Math.abs(worldPos.y - lastWorldPos.y) > 0.1) {
+        
+        throttledCursorUpdate.current(worldPos.x, worldPos.y);
+        lastWorldPosition.current = worldPos;
+      }
+      
+      lastMousePosition.current = currentMousePos;
+    }
   }, [currentUserId, viewport]);
 
   // Global mouse move listener for cursor tracking during drag/transform
@@ -378,8 +443,11 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
       y={viewport.y}
       draggable
       onWheel={handleWheel}
+      onMouseDown={handleMouseDown}
+      onMouseUp={handleMouseUp}
       onMouseMove={handleMouseMove}
       onMouseLeave={handleMouseLeave}
+      onDragStart={handleDragStart}
       onDragEnd={handleDragEnd}
       onClick={handleStageClick}
       onTap={handleStageClick}

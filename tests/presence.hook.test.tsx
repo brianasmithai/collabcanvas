@@ -36,6 +36,9 @@ describe('usePresence', () => {
   it('should update presence map when Firebase data changes', () => {
     const { result } = renderHook(() => usePresence());
     
+        const currentTime = Date.now();
+        const recentTime = currentTime - 30000; // 30 seconds ago (active, within 1 minute threshold)
+    
     // Simulate Firebase data update
     const mockSnapshot = {
       val: () => ({
@@ -43,13 +46,13 @@ describe('usePresence', () => {
           name: 'Alice',
           cursor: { x: 100, y: 200 },
           selectionIds: ['rect1'],
-          updatedAt: 1234567890,
+          updatedAt: recentTime,
         },
         'user2': {
           name: 'Bob',
           cursor: { x: 300, y: 400 },
           selectionIds: [],
-          updatedAt: 1234567891,
+          updatedAt: recentTime + 1000,
         },
       }),
     };
@@ -67,14 +70,14 @@ describe('usePresence', () => {
         displayName: 'Alice',
         cursor: { x: 100, y: 200 },
         selectionIds: ['rect1'],
-        updatedAt: 1234567890,
+        updatedAt: recentTime,
       },
       'user2': {
         name: 'Bob',
         displayName: 'Bob',
         cursor: { x: 300, y: 400 },
         selectionIds: [],
-        updatedAt: 1234567891,
+        updatedAt: recentTime + 1000,
       },
     });
   });
@@ -98,11 +101,14 @@ describe('usePresence', () => {
   it('should handle missing presence fields with defaults', () => {
     const { result } = renderHook(() => usePresence());
     
+        const currentTime = Date.now();
+        const recentTime = currentTime - 30000; // 30 seconds ago (active, within 1 minute threshold)
+    
     const mockSnapshot = {
       val: () => ({
         'user1': {
           // Missing name, cursor, selectionIds
-          updatedAt: 1234567890,
+          updatedAt: recentTime,
         },
       }),
     };
@@ -119,7 +125,7 @@ describe('usePresence', () => {
         displayName: 'Unknown User',
         cursor: { x: 0, y: 0 },
         selectionIds: [],
-        updatedAt: 1234567890,
+        updatedAt: recentTime,
       },
     });
   });
@@ -130,5 +136,80 @@ describe('usePresence', () => {
     // Verify that onValue was called to set up the subscription
     expect(mockOnValue).toHaveBeenCalled();
     expect(mockRef).toHaveBeenCalledWith(rtdb, 'presence');
+  });
+
+  it('should filter out inactive users based on timeout', () => {
+    const { result } = renderHook(() => usePresence());
+    
+    const currentTime = Date.now();
+    const activeTime = currentTime - 30000; // 30 seconds ago (active, within 1 minute threshold)
+    const inactiveTime = currentTime - 90000; // 90 seconds ago (inactive, beyond 1 minute threshold)
+    
+    const mockSnapshot = {
+      val: () => ({
+        'active-user': {
+          name: 'Active User',
+          cursor: { x: 100, y: 200 },
+          selectionIds: [],
+          updatedAt: activeTime,
+        },
+        'inactive-user': {
+          name: 'Inactive User',
+          cursor: { x: 300, y: 400 },
+          selectionIds: [],
+          updatedAt: inactiveTime,
+        },
+      }),
+    };
+
+    const onValueCallback = mockOnValue.mock.calls[0][1];
+    
+    act(() => {
+      onValueCallback(mockSnapshot);
+    });
+
+    // Only active user should be included
+    expect(result.current).toHaveProperty('active-user');
+    expect(result.current).not.toHaveProperty('inactive-user');
+    expect(Object.keys(result.current)).toHaveLength(1);
+  });
+
+  it('should handle users without updatedAt field', () => {
+    const { result } = renderHook(() => usePresence());
+    
+    const mockSnapshot = {
+      val: () => ({
+        'user-without-timestamp': {
+          name: 'User Without Timestamp',
+          cursor: { x: 100, y: 200 },
+          selectionIds: [],
+          // No updatedAt field
+        },
+      }),
+    };
+
+    const onValueCallback = mockOnValue.mock.calls[0][1];
+    
+    act(() => {
+      onValueCallback(mockSnapshot);
+    });
+
+    // User without timestamp should be included (treated as current time)
+    expect(result.current).toHaveProperty('user-without-timestamp');
+    expect(result.current['user-without-timestamp'].updatedAt).toBeGreaterThan(0);
+  });
+
+  it('should handle error in Firebase subscription', () => {
+    const { result } = renderHook(() => usePresence());
+    
+    const onValueCallback = mockOnValue.mock.calls[0][1];
+    const errorCallback = mockOnValue.mock.calls[0][2];
+    
+    act(() => {
+      errorCallback(new Error('Firebase connection error'));
+    });
+
+    // Should return empty map on error
+    expect(result.current).toEqual({});
   });
 });

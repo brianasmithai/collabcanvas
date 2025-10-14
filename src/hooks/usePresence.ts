@@ -4,6 +4,9 @@ import { ref, onValue, off } from 'firebase/database';
 import { rtdb } from '../config/firebaseClient';
 import type { Presence } from '../types';
 
+// Timeout threshold for considering a user inactive (1 minute)
+const INACTIVE_THRESHOLD = 60000;
+
 // Map of user ID to presence data
 export type PresenceMap = Record<string, Presence>;
 
@@ -25,16 +28,34 @@ export const usePresence = (): PresenceMap => {
       if (data) {
         // Convert Firebase data to our presence map
         const presence: PresenceMap = {};
+        const currentTime = Date.now();
+        
         Object.keys(data).forEach((uid) => {
           const userPresence = data[uid];
           if (userPresence) {
-            presence[uid] = {
-              name: userPresence.name || 'Unknown User',
-              displayName: userPresence.displayName || userPresence.name || 'Unknown User',
-              cursor: userPresence.cursor || { x: 0, y: 0 },
-              selectionIds: userPresence.selectionIds || [],
-              updatedAt: userPresence.updatedAt || Date.now(),
-            };
+            const lastUpdate = userPresence.updatedAt || currentTime;
+            const timeSinceUpdate = currentTime - lastUpdate;
+            
+            // Only include users who have been active recently
+            if (timeSinceUpdate < INACTIVE_THRESHOLD) {
+              const presenceData = {
+                name: userPresence.name || 'Unknown User',
+                displayName: userPresence.displayName || userPresence.name || 'Unknown User',
+                cursor: userPresence.cursor || { x: 0, y: 0 },
+                selectionIds: userPresence.selectionIds || [],
+                updatedAt: lastUpdate,
+              };
+              
+              console.log(`👥 usePresence: Processing user ${uid}:`, { 
+                rawData: userPresence, 
+                processedData: presenceData,
+                timeSinceUpdate 
+              });
+              
+              presence[uid] = presenceData;
+            } else {
+              console.log(`👥 usePresence: Filtering out inactive user ${uid} (last seen ${timeSinceUpdate}ms ago)`);
+            }
           }
         });
         console.log('👥 usePresence: Received presence data:', presence);

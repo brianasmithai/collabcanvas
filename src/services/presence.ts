@@ -1,5 +1,5 @@
 // Presence service for real-time user presence and cursor tracking
-import { ref, set, onDisconnect, remove } from 'firebase/database';
+import { ref, set, onDisconnect, remove, get } from 'firebase/database';
 import { rtdb } from '../config/firebaseClient';
 import type { Presence } from '../types';
 
@@ -35,6 +35,7 @@ export const setInitialPresence = async (uid: string, displayName: string) => {
     selectionIds: [],
   };
   
+  console.log('Setting initial presence data:', { uid, displayName, presenceData });
   await setPresence(uid, presenceData);
 };
 
@@ -74,4 +75,47 @@ export const updateSelection = async (uid: string, selectionIds: string[]) => {
 export const removePresence = async (uid: string) => {
   const presenceRef = ref(rtdb, `presence/${uid}`);
   await remove(presenceRef);
+};
+
+/**
+ * Clean up stale presence entries (users who haven't updated in a while)
+ * This should be called periodically to remove inactive users
+ */
+export const cleanupStalePresence = async () => {
+  const presenceRef = ref(rtdb, 'presence');
+  const snapshot = await get(presenceRef);
+  const data = snapshot.val();
+  
+  if (!data) return;
+  
+  const currentTime = Date.now();
+  const INACTIVE_THRESHOLD = 300000; // 5 minute threshold for cleanup
+  
+  const staleUsers: string[] = [];
+  
+  Object.keys(data).forEach((uid) => {
+    const userPresence = data[uid];
+    if (userPresence) {
+      const lastUpdate = userPresence.updatedAt || currentTime;
+      const timeSinceUpdate = currentTime - lastUpdate;
+      
+      if (timeSinceUpdate > INACTIVE_THRESHOLD) {
+        staleUsers.push(uid);
+      }
+    }
+  });
+  
+  // Remove stale users
+  for (const uid of staleUsers) {
+    try {
+      await removePresence(uid);
+      console.log(`🧹 Cleaned up stale presence for user: ${uid}`);
+    } catch (error) {
+      console.error(`Failed to clean up stale presence for user ${uid}:`, error);
+    }
+  }
+  
+  if (staleUsers.length > 0) {
+    console.log(`🧹 Cleaned up ${staleUsers.length} stale presence entries`);
+  }
 };

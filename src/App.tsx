@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { onAuthStateChanged, type User } from 'firebase/auth'
 import { auth } from './config/firebaseClient'
-import { setInitialPresence } from './services/presence'
+import { setInitialPresence, removePresence, cleanupStalePresence } from './services/presence'
 import './App.css'
 import { useUIStore } from './state/uiStore'
 import { CanvasStage } from './components/CanvasStage'
@@ -34,11 +34,21 @@ function App() {
       if (user) {
         try {
           const displayName = user.displayName || user.email?.split('@')[0] || 'User'
+          console.log('Setting initial presence for user:', { 
+            uid: user.uid, 
+            email: user.email, 
+            displayName: user.displayName, 
+            computedName: displayName 
+          })
           await setInitialPresence(user.uid, displayName)
           console.log('Initial presence set for user:', displayName)
         } catch (error) {
           console.error('Failed to set initial presence:', error)
         }
+      } else {
+        // User signed out - clean up any remaining presence
+        // Note: This is a backup cleanup, the main cleanup happens in TopBar
+        console.log('User signed out, auth state changed to null')
       }
     })
 
@@ -59,6 +69,21 @@ function App() {
     return () => window.removeEventListener('resize', handleResize)
   }, [])
 
+  // Periodic cleanup of stale presence entries
+  useEffect(() => {
+    if (!user) return; // Only run cleanup when user is authenticated
+    
+    const cleanupInterval = setInterval(async () => {
+      try {
+        await cleanupStalePresence()
+      } catch (error) {
+        console.error('Failed to cleanup stale presence:', error)
+      }
+    }, 120000) // Run cleanup every 2 minutes
+
+    return () => clearInterval(cleanupInterval)
+  }, [user])
+
   // Handle successful authentication
   const handleAuthSuccess = async (user: User) => {
     setUser(user)
@@ -67,6 +92,12 @@ function App() {
     // Set initial presence for the user
     try {
       const displayName = user.displayName || user.email?.split('@')[0] || 'User'
+      console.log('Setting initial presence for user (handleAuthSuccess):', { 
+        uid: user.uid, 
+        email: user.email, 
+        displayName: user.displayName, 
+        computedName: displayName 
+      })
       await setInitialPresence(user.uid, displayName)
       console.log('Initial presence set for user:', displayName)
     } catch (error) {

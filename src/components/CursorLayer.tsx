@@ -3,36 +3,7 @@ import React from 'react';
 import { Layer, Circle, Text, Group } from 'react-konva';
 import { usePresence } from '../hooks/usePresence';
 import { useUIStore } from '../state/uiStore';
-
-// Predefined colors for user cursors
-const USER_COLORS = [
-  '#28a745', // Green
-  '#007bff', // Blue
-  '#dc3545', // Red
-  '#ffc107', // Yellow
-  '#6f42c1', // Purple
-  '#fd7e14', // Orange
-  '#20c997', // Teal
-  '#e83e8c', // Pink
-  '#6c757d', // Gray
-  '#17a2b8', // Cyan
-];
-
-// Function to assign colors to users dynamically to avoid conflicts
-const assignUserColors = (userIds: string[]): Record<string, string> => {
-  const colorAssignments: Record<string, string> = {};
-  
-  // Sort user IDs to ensure consistent assignment order
-  const sortedUserIds = [...userIds].sort();
-  
-  sortedUserIds.forEach((userId, index) => {
-    // Assign colors in order, cycling through the palette
-    const colorIndex = index % USER_COLORS.length;
-    colorAssignments[userId] = USER_COLORS[colorIndex];
-  });
-  
-  return colorAssignments;
-};
+import { assignUserColors } from '../utils/colors';
 
 interface CursorLayerProps {
   currentUserId?: string; // Don't show current user's cursor

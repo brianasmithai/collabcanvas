@@ -1,6 +1,7 @@
 import React from 'react';
 import { signOut } from 'firebase/auth';
 import { auth } from '../config/firebaseClient';
+import { removePresence } from '../services/presence';
 
 interface TopBarProps {
   userEmail?: string;
@@ -10,8 +11,24 @@ interface TopBarProps {
 export const TopBar: React.FC<TopBarProps> = ({ userEmail, userDisplayName }) => {
   const handleSignOut = async () => {
     try {
+      // Get current user before signing out
+      const currentUser = auth.currentUser;
+      const userId = currentUser?.uid;
+      
+      // Sign out first
       await signOut(auth);
       console.log('User signed out successfully');
+      
+      // Manually remove presence from Realtime Database
+      if (userId) {
+        try {
+          await removePresence(userId);
+          console.log('Presence removed successfully');
+        } catch (presenceError) {
+          console.error('Error removing presence:', presenceError);
+          // Don't throw here - sign out was successful
+        }
+      }
     } catch (error) {
       console.error('Error signing out:', error);
     }
