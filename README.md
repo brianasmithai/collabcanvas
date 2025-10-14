@@ -70,6 +70,37 @@ VITE_FIREBASE_DATABASE_URL=https://your_project-default-rtdb.firebaseio.com
 - `npm run preview` - Preview production build locally
 - `npm run lint` - Run ESLint
 
+## Conflict Resolution Policy
+
+CollabCanvas uses a **Last-Write-Wins (LWW)** strategy for handling concurrent edits:
+
+### How It Works
+
+- **Timestamp-based**: Each rectangle update includes an `updatedAt` timestamp
+- **User tracking**: Each update includes an `updatedBy` field with the user ID
+- **Automatic resolution**: When conflicts occur, the update with the most recent timestamp wins
+- **Optimistic UI**: Local changes appear immediately for smooth user experience
+
+### Conflict Scenarios
+
+1. **Simultaneous position changes**: The last position update wins
+2. **Simultaneous resize operations**: The last size/rotation update wins
+3. **Mixed operations**: Each property (x, y, width, height, rotation) is resolved independently
+
+### Performance Optimizations
+
+- **Throttled updates**: High-frequency operations (drag, resize) are throttled to 10 updates/second
+- **Batch operations**: Multiple rectangle operations are batched for efficiency
+- **Optimistic updates**: UI updates immediately while background sync occurs
+
+### Example
+
+```
+User A moves rectangle at 10:00:00.000
+User B moves same rectangle at 10:00:00.100
+Result: User B's position wins (more recent timestamp)
+```
+
 ## Project Status
 
 🚧 **Currently in MVP development** - This is a work in progress. See the [tasks documentation](docs/tasks.md) for current progress and roadmap.

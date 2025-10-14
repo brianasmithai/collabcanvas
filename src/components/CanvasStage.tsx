@@ -3,6 +3,7 @@ import React, { useRef, useCallback, useState, useEffect } from 'react';
 import { Stage, Layer, Transformer } from 'react-konva';
 import { useUIStore } from '../state/uiStore';
 import { getZoomFactor, screenToWorld } from '../utils/geometry';
+import { throttle } from '../utils/throttle';
 import { RectNode } from './RectNode';
 import { CursorLayer } from './CursorLayer';
 import { useRectangles } from '../hooks/useRectangles';
@@ -114,7 +115,21 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
     }
   }, [selectionIds, setSelectionIds]);
 
-  // Handle rectangle drag end (update position)
+  // Handle rectangle drag move (throttled updates during drag)
+  const handleRectDragMove = useCallback(async (rectId: string, newX: number, newY: number) => {
+    try {
+      await updateRect(rectId, { 
+        x: newX, 
+        y: newY, 
+        updatedAt: Date.now(),
+        updatedBy: currentUserId || 'local-user'
+      });
+    } catch (err) {
+      console.error('Failed to update rectangle position during drag:', err);
+    }
+  }, [updateRect, currentUserId]);
+
+  // Handle rectangle drag end (final position update)
   const handleRectDragEnd = useCallback(async (rectId: string, newX: number, newY: number) => {
     try {
       await updateRect(rectId, { 
@@ -154,13 +169,42 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
     });
   }, [rectangles]);
 
+  // Create throttled transform update function
+  const throttledTransformUpdate = useRef<((node: any, rectId: string) => void) | null>(null);
+  
+  if (!throttledTransformUpdate.current) {
+    throttledTransformUpdate.current = throttle(async (node: any, rectId: string) => {
+      // Apply the scale to width/height and reset scale to 1
+      const newWidth = node.width() * node.scaleX();
+      const newHeight = node.height() * node.scaleY();
+      
+      try {
+        await updateRect(rectId, {
+          x: node.x(),
+          y: node.y(),
+          width: newWidth,
+          height: newHeight,
+          rotation: node.rotation(),
+          updatedAt: Date.now(),
+          updatedBy: currentUserId || 'local-user'
+        });
+      } catch (err) {
+        console.error('Failed to update rectangle transform:', err);
+      }
+    }, 100); // Throttle to 10 updates per second
+  }
+
   // Handle transformer changes (resize/rotate)
   const handleTransformEnd = useCallback(async () => {
     if (transformerRef.current && selectionIds.length > 0) {
       const nodes = transformerRef.current.nodes();
-      const updatePromises = nodes.map(async (node: any) => {
+      
+      for (const node of nodes) {
         const rectId = rectangles.find(rect => rectRefs.current[rect.id] === node)?.id;
-        if (rectId) {
+        if (rectId && throttledTransformUpdate.current) {
+          // Flush any pending throttled updates
+          (throttledTransformUpdate.current as any).flush();
+          
           // Apply the scale to width/height and reset scale to 1
           const newWidth = node.width() * node.scaleX();
           const newHeight = node.height() * node.scaleY();
@@ -183,9 +227,7 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
           node.scaleX(1);
           node.scaleY(1);
         }
-      });
-      
-      await Promise.all(updatePromises);
+      }
     }
   }, [selectionIds, rectangles, updateRect, currentUserId]);
 
@@ -289,6 +331,7 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
             rect={rect}
             isSelected={selectionIds.includes(rect.id)}
             onClick={handleRectClick}
+            onDragMove={handleRectDragMove}
             onDragEnd={handleRectDragEnd}
           />
         ))}

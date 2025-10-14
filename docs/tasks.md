@@ -198,15 +198,15 @@ tests/
 ## PR 9 — Transform Sync Strategy (Throttle + LWW)
 **Goal:** Smooth transforms, minimal writes, predictable conflicts.
 
-- [ ] Add `throttle` helper for high‑frequency events  
+- [X] Add `throttle` helper for high‑frequency events  
   **Files:** `src/utils/throttle.ts` (new)
-- [ ] During drag/resize/rotate: update UI immediately; **persist only on drag end** (or every N ms)  
+- [X] During drag/resize/rotate: update UI immediately; **persist only on drag end** (or every N ms)  
   **Files:** `src/components/RectNode.tsx` (edit), `src/services/rectangles.ts` (edit)
-- [ ] Stamp `updatedAt`/`updatedBy`; define **LWW** conflict policy  
+- [X] Stamp `updatedAt`/`updatedBy`; define **LWW** conflict policy  
   **Files:** `src/services/rectangles.ts` (edit), `README.md` (edit: policy section)
 
 **Tests (bare‑bones):** Utility only.  
-- [ ] `throttle.test.ts`: ensures calls are limited to cadence and final call delivered  
+- [X] `throttle.test.ts`: ensures calls are limited to cadence and final call delivered  
   **Files:** `tests/throttle.test.ts` (new)
 
 ---
