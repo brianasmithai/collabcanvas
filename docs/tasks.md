@@ -366,23 +366,6 @@ tests/
 
 ---
 
-## PR 18 — Z-Index Management
-**Goal:** Add manual layer control for rectangles with explicit z-index management.
-
-- [ ] Add zIndex field to Rect type and preserve during move/resize operations
-  **Files:** `src/types.ts` (edit), `src/services/rectangles.ts` (edit)
-- [ ] Add layer control UI: "Bring to Front", "Send to Back", "Move Up One Layer", "Move Down One Layer"
-  **Files:** `src/components/RectNode.tsx` (edit), `src/components/CanvasStage.tsx` (edit)
-
-**Tests (bare‑bones):** Manual testing of layer controls and z-index preservation.
-
-**Automated Tests:**
-- [ ] Add `src/types.test.ts` - Test zIndex field validation, default zIndex assignment
-- [ ] Extend `src/services/rectangles.test.ts` - Test zIndex preservation during move/resize, layer control operations
-- [ ] Extend `src/components/RectNode.test.tsx` - Test layer control UI rendering, zIndex-based rendering order
-
----
-
 ## Known Issues & Future Improvements
 
 ### Critical Bugs
@@ -398,6 +381,11 @@ tests/
   - **Solution**: Modified functions to fetch and preserve existing user data during updates
 
 ### Future Enhancements
+- [ ] **Z-Index Management (PR 18)**: Add manual layer control for rectangles with explicit z-index management
+  - Add zIndex field to Rect type and preserve during move/resize operations
+  - Add layer control UI: "Bring to Front", "Send to Back", "Move Up One Layer", "Move Down One Layer"
+  - **Files:** `src/types.ts`, `src/services/rectangles.ts`, `src/components/RectNode.tsx`, `src/components/CanvasStage.tsx`
+  - **Tests:** Manual testing of layer controls and z-index preservation, automated tests for zIndex field validation and preservation
 - [ ] Add more shape types (circles, lines, text)
 - [ ] Implement undo/redo functionality
 - [ ] Add export capabilities (PNG/SVG)
