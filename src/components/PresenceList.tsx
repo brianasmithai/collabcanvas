@@ -25,7 +25,7 @@ export const PresenceList: React.FC<PresenceListProps> = ({
       name: presence.displayName || presence.name,
       lastSeen: presence.updatedAt,
     }))
-    .sort((a, b) => b.lastSeen - a.lastSeen); // Sort by most recent activity
+    .sort((a, b) => a.name.localeCompare(b.name)); // Sort alphabetically by name
 
   // Get all user IDs for consistent color assignment
   const allUserIds = Object.keys(presenceMap).filter(uid => uid !== currentUserId);
@@ -34,7 +34,7 @@ export const PresenceList: React.FC<PresenceListProps> = ({
     return (
       <div className={`presence-list ${className}`}>
         <div className="presence-header">
-          <strong>Online Users</strong>
+          <strong>👥 Current Users</strong>
         </div>
         <div className="presence-empty">
           No other users online
@@ -46,7 +46,7 @@ export const PresenceList: React.FC<PresenceListProps> = ({
   return (
     <div className={`presence-list ${className}`}>
       <div className="presence-header">
-        <strong>Online Users ({onlineUsers.length})</strong>
+        <strong>👥 Current Users ({onlineUsers.length})</strong>
       </div>
       <div className="presence-users">
         {onlineUsers.map(({ uid, name, lastSeen }) => {

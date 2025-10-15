@@ -205,20 +205,21 @@ function App() {
           <div style={{ 
             fontSize: '12px', 
             color: '#555',
-            lineHeight: '1.5'
+            lineHeight: '1.5',
+            textAlign: 'left'
           }}>
-            <div>• Drag to pan around the canvas</div>
-            <div>• Mouse wheel to zoom in/out</div>
-            <div>• Click rectangles to select them</div>
-            <div>• Double-click empty space to create rectangle</div>
-            <div>• Press 'N' to create rectangle at center</div>
-            <div>• Drag rectangles to move them</div>
-            <div>• Use resize handles to resize/rotate</div>
-            <div>• Press Delete/Backspace to delete selected</div>
-            <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #eee', color: '#888' }}>
+            <div>• <strong>Drag canvas</strong> to pan around</div>
+            <div>• <strong>Mouse wheel</strong> to zoom in/out</div>
+            <div>• <strong>Click rectangles</strong> to select them</div>
+            <div>• <strong>Double-click empty space</strong> to create rectangle</div>
+            <div>• <strong>Press 'N'</strong> to create rectangle at center</div>
+            <div>• <strong>Drag rectangles</strong> to move them</div>
+            <div>• <strong>Use resize handles</strong> to resize/rotate</div>
+            <div>• <strong>Press Delete/Backspace</strong> to delete selected</div>
+            <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #eee', color: '#888', textAlign: 'center' }}>
               • Press 'I' to toggle instructions
             </div>
-            <div style={{ color: '#888' }}>
+            <div style={{ color: '#888', textAlign: 'center' }}>
               • Press 'D' to toggle debug info
             </div>
           </div>
@@ -229,7 +230,7 @@ function App() {
       {showDebugPanel && (
         <div style={{ 
           position: 'absolute', 
-          top: showInstructionsPanel ? '200px' : '70px', 
+          top: showInstructionsPanel ? '350px' : '70px', 
           left: '10px', 
           zIndex: 1000, 
           background: 'rgba(255, 255, 255, 0.95)', 
@@ -279,6 +280,18 @@ function App() {
             <div style={{ marginBottom: '8px' }}>
               <strong>Selection:</strong> {selectionIds.length} items
             </div>
+          </div>
+          
+          <div style={{ 
+            marginTop: '12px', 
+            paddingTop: '12px',
+            borderTop: '1px solid #eee',
+            fontSize: '12px', 
+            color: '#888',
+            lineHeight: '1.5'
+          }}>
+            <div>• Press 'I' to toggle instructions</div>
+            <div>• Press 'D' to toggle debug info</div>
           </div>
         </div>
       )}
