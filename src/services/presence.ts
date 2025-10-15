@@ -55,9 +55,7 @@ export const updateCursor = async (uid: string, cursor: { x: number; y: number }
     ...currentData,
     cursor: cursor,
     updatedAt: Date.now(),
-    // Preserve existing name/displayName or set defaults
-    name: currentData?.name || 'User',
-    displayName: currentData?.displayName || currentData?.name || 'User'
+    // Note: do NOT set default name/displayName here to avoid overwriting with generic labels
   };
   
   await set(presenceRef, updatedData);
@@ -80,9 +78,7 @@ export const updateSelection = async (uid: string, selectionIds: string[]) => {
     ...currentData,
     selectionIds: selectionIds,
     updatedAt: Date.now(),
-    // Preserve existing name/displayName or set defaults
-    name: currentData?.name || 'User',
-    displayName: currentData?.displayName || currentData?.name || 'User'
+    // Note: do NOT set default name/displayName here to avoid overwriting with generic labels
   };
   
   await set(presenceRef, updatedData);

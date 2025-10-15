@@ -14,21 +14,21 @@ export const TopBar: React.FC<TopBarProps> = ({ userEmail, userDisplayName }) =>
       // Get current user before signing out
       const currentUser = auth.currentUser;
       const userId = currentUser?.uid;
-      
-      // Sign out first
-      await signOut(auth);
-      console.log('User signed out successfully');
-      
-      // Manually remove presence from Realtime Database
+
+      // IMPORTANT: Remove presence BEFORE signing out so we still have write access
       if (userId) {
         try {
           await removePresence(userId);
           console.log('Presence removed successfully');
         } catch (presenceError) {
-          console.error('Error removing presence:', presenceError);
-          // Don't throw here - sign out was successful
+          console.error('Error removing presence before sign out:', presenceError);
+          // Continue with sign-out even if presence removal fails; onDisconnect should still handle it
         }
       }
+
+      // Now sign out
+      await signOut(auth);
+      console.log('User signed out successfully');
     } catch (error) {
       console.error('Error signing out:', error);
     }
