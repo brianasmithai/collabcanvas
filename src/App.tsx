@@ -89,6 +89,11 @@ function App() {
   // Handle keyboard shortcuts
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      // Don't trigger shortcuts when typing in input fields
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        return;
+      }
+      
       // Toggle debug panel with 'D' key
       if (e.key === 'd' || e.key === 'D') {
         e.preventDefault()
