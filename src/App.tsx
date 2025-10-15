@@ -264,15 +264,15 @@ function App() {
             </div>
           </div>
           
-          <div style={{ fontSize: '13px', lineHeight: '1.4', color: '#000' }}>
+          <div style={{ fontSize: '13px', lineHeight: '1.4', color: '#000', textAlign: 'left' }}>
             <div style={{ marginBottom: '8px' }}>
               <strong>User:</strong> {user.email} ({user.displayName || 'No display name'})
             </div>
             <div style={{ marginBottom: '8px' }}>
-              <strong>Canvas:</strong> {dimensions.width} × {dimensions.height}
+              <strong>Viewport:</strong> {dimensions.width} × {dimensions.height}
             </div>
             <div style={{ marginBottom: '8px' }}>
-              <strong>Viewport:</strong> scale={viewport.scale.toFixed(2)}, x={viewport.x.toFixed(0)}, y={viewport.y.toFixed(0)}
+              <strong>Canvas:</strong> scale={viewport.scale.toFixed(2)}, x={viewport.x.toFixed(0)}, y={viewport.y.toFixed(0)}
             </div>
             <div style={{ marginBottom: '8px' }}>
               <strong>Tool:</strong> {toolMode}

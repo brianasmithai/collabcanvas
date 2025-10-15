@@ -39,8 +39,8 @@ export const CursorLayer: React.FC<CursorLayerProps> = ({ currentUserId }) => {
         const userColor = colorAssignments[uid];
         
         // Convert world coordinates to screen coordinates
-        const screenX = cursor.x * viewport.scale + viewport.x;
-        const screenY = cursor.y * viewport.scale + viewport.y;
+        const screenX = (cursor.x + viewport.x) * viewport.scale;
+        const screenY = (cursor.y + viewport.y) * viewport.scale;
 
 
         return (
