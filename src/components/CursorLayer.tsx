@@ -2,7 +2,6 @@
 import React from 'react';
 import { Layer, Circle, Text, Group } from 'react-konva';
 import { usePresence } from '../hooks/usePresence';
-import { useUIStore } from '../state/uiStore';
 import { assignUserColors } from '../utils/colors';
 
 interface CursorLayerProps {
@@ -11,7 +10,6 @@ interface CursorLayerProps {
 
 export const CursorLayer: React.FC<CursorLayerProps> = ({ currentUserId }) => {
   const presenceMap = usePresence();
-  const { viewport } = useUIStore();
 
 
 
@@ -38,9 +36,9 @@ export const CursorLayer: React.FC<CursorLayerProps> = ({ currentUserId }) => {
         const userName = displayName || name;
         const userColor = colorAssignments[uid];
         
-        // Convert world coordinates to screen coordinates
-        const screenX = (cursor.x + viewport.x) * viewport.scale;
-        const screenY = (cursor.y + viewport.y) * viewport.scale;
+        // Use world coordinates directly - Stage component handles transformation
+        const screenX = cursor.x;
+        const screenY = cursor.y;
 
 
         return (

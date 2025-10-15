@@ -161,14 +161,30 @@ describe('App', () => {
     
     // Instructions panel should be visible by default
     expect(screen.getByText('📋 Instructions')).toBeInTheDocument();
-    expect(screen.getByText('• Drag to pan around the canvas')).toBeInTheDocument();
-    expect(screen.getByText('• Mouse wheel to zoom in/out')).toBeInTheDocument();
-    expect(screen.getByText('• Click rectangles to select them')).toBeInTheDocument();
-    expect(screen.getByText('• Double-click empty space to create rectangle')).toBeInTheDocument();
-    expect(screen.getByText('• Press \'N\' to create rectangle at center')).toBeInTheDocument();
-    expect(screen.getByText('• Drag rectangles to move them')).toBeInTheDocument();
-    expect(screen.getByText('• Use resize handles to resize/rotate')).toBeInTheDocument();
-    expect(screen.getByText('• Press Delete/Backspace to delete selected')).toBeInTheDocument();
+    expect(screen.getByText((content, element) => {
+      return element?.textContent === '• Drag canvas to pan around';
+    })).toBeInTheDocument();
+    expect(screen.getByText((content, element) => {
+      return element?.textContent === '• Mouse wheel to zoom in/out';
+    })).toBeInTheDocument();
+    expect(screen.getByText((content, element) => {
+      return element?.textContent === '• Click rectangles to select them';
+    })).toBeInTheDocument();
+    expect(screen.getByText((content, element) => {
+      return element?.textContent === '• Double-click empty space to create rectangle';
+    })).toBeInTheDocument();
+    expect(screen.getByText((content, element) => {
+      return element?.textContent === '• Press \'N\' to create rectangle at center';
+    })).toBeInTheDocument();
+    expect(screen.getByText((content, element) => {
+      return element?.textContent === '• Drag rectangles to move them';
+    })).toBeInTheDocument();
+    expect(screen.getByText((content, element) => {
+      return element?.textContent === '• Use resize handles to resize/rotate';
+    })).toBeInTheDocument();
+    expect(screen.getByText((content, element) => {
+      return element?.textContent === '• Press Delete/Backspace to delete selected';
+    })).toBeInTheDocument();
     expect(screen.getByText('• Press \'I\' to toggle instructions')).toBeInTheDocument();
     expect(screen.getByText('• Press \'D\' to toggle debug info')).toBeInTheDocument();
   });
