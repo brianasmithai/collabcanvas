@@ -229,8 +229,8 @@ function App() {
       {showDebugPanel && (
         <div style={{ 
           position: 'absolute', 
-          top: 70, 
-          left: showInstructionsPanel ? '310px' : '10px', 
+          top: showInstructionsPanel ? '200px' : '70px', 
+          left: '10px', 
           zIndex: 1000, 
           background: 'rgba(255, 255, 255, 0.95)', 
           padding: '16px', 
@@ -263,7 +263,7 @@ function App() {
             </div>
           </div>
           
-          <div style={{ fontSize: '13px', lineHeight: '1.4' }}>
+          <div style={{ fontSize: '13px', lineHeight: '1.4', color: '#000' }}>
             <div style={{ marginBottom: '8px' }}>
               <strong>User:</strong> {user.email} ({user.displayName || 'No display name'})
             </div>
