@@ -4,8 +4,8 @@ import { ref, onValue, off } from 'firebase/database';
 import { rtdb } from '../config/firebaseClient';
 import type { Presence } from '../types';
 
-// Timeout threshold for considering a user inactive (1 minute)
-const INACTIVE_THRESHOLD = 60000;
+// Timeout threshold for considering a user inactive (5 minutes - matches cleanup threshold)
+const INACTIVE_THRESHOLD = 300000;
 
 // Map of user ID to presence data
 export type PresenceMap = Record<string, Presence>;

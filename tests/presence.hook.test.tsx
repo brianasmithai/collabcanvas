@@ -37,7 +37,7 @@ describe('usePresence', () => {
     const { result } = renderHook(() => usePresence());
     
         const currentTime = Date.now();
-        const recentTime = currentTime - 30000; // 30 seconds ago (active, within 1 minute threshold)
+        const recentTime = currentTime - 30000; // 30 seconds ago (active, within 5 minute threshold)
     
     // Simulate Firebase data update
     const mockSnapshot = {
@@ -102,7 +102,7 @@ describe('usePresence', () => {
     const { result } = renderHook(() => usePresence());
     
         const currentTime = Date.now();
-        const recentTime = currentTime - 30000; // 30 seconds ago (active, within 1 minute threshold)
+        const recentTime = currentTime - 30000; // 30 seconds ago (active, within 5 minute threshold)
     
     const mockSnapshot = {
       val: () => ({
@@ -142,8 +142,8 @@ describe('usePresence', () => {
     const { result } = renderHook(() => usePresence());
     
     const currentTime = Date.now();
-    const activeTime = currentTime - 30000; // 30 seconds ago (active, within 1 minute threshold)
-    const inactiveTime = currentTime - 90000; // 90 seconds ago (inactive, beyond 1 minute threshold)
+    const activeTime = currentTime - 30000; // 30 seconds ago (active, within 5 minute threshold)
+    const inactiveTime = currentTime - 360000; // 6 minutes ago (inactive, beyond 5 minute threshold)
     
     const mockSnapshot = {
       val: () => ({
