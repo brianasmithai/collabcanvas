@@ -7,12 +7,14 @@ import type { Rect } from '../types';
 interface RectNodeProps {
   rect: Rect;
   isSelected: boolean;
-  onClick: (rectId: string) => void;
-  onDragEnd: (rectId: string, newX: number, newY: number) => void;
-  onDragMove?: (rectId: string, newX: number, newY: number) => void;
+  onClick: (id: string) => void;
+  onDragMove: (id: string, x: number, y: number) => void;
+  onDragEnd: (id: string, x: number, y: number) => void;
 }
 
-export const RectNode = forwardRef<any, RectNodeProps>(({ rect, isSelected, onClick, onDragEnd, onDragMove }, ref) => {
+export const RectNode = forwardRef<any, RectNodeProps>(({ rect, isSelected, onClick, onDragMove, onDragEnd }, ref) => {
+  const shapeRef = useRef<any>(null);
+
   // Create throttled update function for drag moves
   const throttledUpdateRef = useRef<((x: number, y: number) => void) | null>(null);
   
@@ -22,6 +24,7 @@ export const RectNode = forwardRef<any, RectNodeProps>(({ rect, isSelected, onCl
     }, 100); // Throttle to 10 updates per second
   }
 
+  // Combine refs
   const handleClick = (e: any) => {
     e.cancelBubble = true; // Prevent stage click
     onClick(rect.id);

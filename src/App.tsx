@@ -8,6 +8,9 @@ import { CanvasStage } from './components/CanvasStage'
 import { PresenceList } from './components/PresenceList'
 import { AuthGate } from './components/AuthGate'
 import { TopBar } from './components/TopBar'
+import { InstructionsPanel } from './components/InstructionsPanel'
+import { DebugPanel } from './components/DebugPanel'
+import { useGlobalKeyboardShortcuts } from './hooks/useGlobalKeyboardShortcuts'
 
 function App() {
   const [dimensions, setDimensions] = useState({ width: 800, height: 600 })
@@ -22,10 +25,6 @@ function App() {
   // Get current user ID from Firebase Auth
   const currentUserId = user?.uid || null
   
-  // Log store values to console for verification (remove in production)
-  console.log('UI Store state:', { toolMode, viewport, selectionIds })
-  console.log('Auth state:', { user: user?.email, uid: currentUserId })
-
   // Handle auth state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (user) => {
@@ -36,14 +35,7 @@ function App() {
       if (user) {
         try {
           const displayName = user.displayName || user.email?.split('@')[0] || 'User'
-          console.log('Setting initial presence for user:', { 
-            uid: user.uid, 
-            email: user.email, 
-            displayName: user.displayName, 
-            computedName: displayName 
-          })
           await setInitialPresence(user.uid, displayName)
-          console.log('Initial presence set for user:', displayName)
         } catch (error) {
           console.error('Failed to set initial presence:', error)
         }
@@ -86,50 +78,7 @@ function App() {
     return () => clearInterval(cleanupInterval)
   }, [user])
 
-  // Handle keyboard shortcuts
-  useEffect(() => {
-    const handleKeyDown = (e: KeyboardEvent) => {
-      // Don't trigger shortcuts when typing in input fields
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-        return;
-      }
-      
-      // Toggle debug panel with 'D' key
-      if (e.key === 'd' || e.key === 'D') {
-        e.preventDefault()
-        setShowDebugPanel(prev => !prev)
-      }
-      // Toggle instructions panel with 'I' key
-      if (e.key === 'i' || e.key === 'I') {
-        e.preventDefault()
-        setShowInstructionsPanel(prev => !prev)
-      }
-    }
-
-    window.addEventListener('keydown', handleKeyDown)
-    return () => window.removeEventListener('keydown', handleKeyDown)
-  }, [])
-
-  // Handle successful authentication
-  const handleAuthSuccess = async (user: User) => {
-    setUser(user)
-    console.log('User authenticated:', user.email, user.displayName)
-    
-    // Set initial presence for the user
-    try {
-      const displayName = user.displayName || user.email?.split('@')[0] || 'User'
-      console.log('Setting initial presence for user (handleAuthSuccess):', { 
-        uid: user.uid, 
-        email: user.email, 
-        displayName: user.displayName, 
-        computedName: displayName 
-      })
-      await setInitialPresence(user.uid, displayName)
-      console.log('Initial presence set for user:', displayName)
-    } catch (error) {
-      console.error('Failed to set initial presence:', error)
-    }
-  }
+  useGlobalKeyboardShortcuts({ setShowDebugPanel, setShowInstructionsPanel });
 
   // Show loading state while checking auth
   if (authLoading) {
@@ -157,7 +106,7 @@ function App() {
 
   // Show auth gate if not authenticated
   if (!user) {
-    return <AuthGate onAuthSuccess={handleAuthSuccess} />
+    return <AuthGate onAuthSuccess={setUser} />
   }
 
   // Show main app if authenticated
@@ -170,135 +119,15 @@ function App() {
       />
       
       {/* Instructions panel - toggleable with 'I' key */}
-      {showInstructionsPanel && (
-        <div style={{ 
-          position: 'absolute', 
-          top: 70, 
-          left: 10, 
-          zIndex: 1000, 
-          background: 'rgba(255, 255, 255, 0.95)', 
-          padding: '16px', 
-          border: '1px solid #ddd', 
-          borderRadius: '8px',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-          backdropFilter: 'blur(10px)',
-          minWidth: '280px',
-          fontFamily: 'system-ui, -apple-system, sans-serif'
-        }}>
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center', 
-            marginBottom: '12px',
-            borderBottom: '1px solid #eee',
-            paddingBottom: '8px'
-          }}>
-            <div style={{ fontWeight: '600', color: '#333', fontSize: '14px' }}>
-              📋 Instructions
-            </div>
-            <div style={{ 
-              fontSize: '11px', 
-              color: '#666', 
-              background: '#f5f5f5', 
-              padding: '2px 6px', 
-              borderRadius: '4px' 
-            }}>
-              Press 'I' to toggle
-            </div>
-          </div>
-          
-          <div style={{ 
-            fontSize: '12px', 
-            color: '#555',
-            lineHeight: '1.5',
-            textAlign: 'left'
-          }}>
-            <div>• <strong>Drag canvas</strong> to pan around</div>
-            <div>• <strong>Mouse wheel</strong> to zoom in/out</div>
-            <div>• <strong>Click rectangles</strong> to select them</div>
-            <div>• <strong>Double-click empty space</strong> to create rectangle</div>
-            <div>• <strong>Press 'N'</strong> to create rectangle at center</div>
-            <div>• <strong>Drag rectangles</strong> to move them</div>
-            <div>• <strong>Use resize handles</strong> to resize/rotate</div>
-            <div>• <strong>Press Delete/Backspace</strong> to delete selected</div>
-            <div style={{ marginTop: '8px', paddingTop: '8px', borderTop: '1px solid #eee', color: '#888', textAlign: 'center' }}>
-              • Press 'I' to toggle instructions
-            </div>
-            <div style={{ color: '#888', textAlign: 'center' }}>
-              • Press 'D' to toggle debug info
-            </div>
-          </div>
-        </div>
-      )}
+      {showInstructionsPanel && <InstructionsPanel />}
 
       {/* Debug info panel - toggleable with 'D' key */}
       {showDebugPanel && (
-        <div style={{ 
-          position: 'absolute', 
-          top: showInstructionsPanel ? '350px' : '70px', 
-          left: '10px', 
-          zIndex: 1000, 
-          background: 'rgba(255, 255, 255, 0.95)', 
-          padding: '16px', 
-          border: '1px solid #ddd', 
-          borderRadius: '8px',
-          boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)',
-          backdropFilter: 'blur(10px)',
-          minWidth: '280px',
-          fontFamily: 'system-ui, -apple-system, sans-serif'
-        }}>
-          <div style={{ 
-            display: 'flex', 
-            justifyContent: 'space-between', 
-            alignItems: 'center', 
-            marginBottom: '12px',
-            borderBottom: '1px solid #eee',
-            paddingBottom: '8px'
-          }}>
-            <div style={{ fontWeight: '600', color: '#333', fontSize: '14px' }}>
-              🐛 Debug Info
-            </div>
-            <div style={{ 
-              fontSize: '11px', 
-              color: '#666', 
-              background: '#f5f5f5', 
-              padding: '2px 6px', 
-              borderRadius: '4px' 
-            }}>
-              Press 'D' to toggle
-            </div>
-          </div>
-          
-          <div style={{ fontSize: '13px', lineHeight: '1.4', color: '#000', textAlign: 'left' }}>
-            <div style={{ marginBottom: '8px' }}>
-              <strong>User:</strong> {user.email} ({user.displayName || 'No display name'})
-            </div>
-            <div style={{ marginBottom: '8px' }}>
-              <strong>Viewport:</strong> {dimensions.width} × {dimensions.height}
-            </div>
-            <div style={{ marginBottom: '8px' }}>
-              <strong>Canvas:</strong> scale={viewport.scale.toFixed(2)}, x={viewport.x.toFixed(0)}, y={viewport.y.toFixed(0)}
-            </div>
-            <div style={{ marginBottom: '8px' }}>
-              <strong>Tool:</strong> {toolMode}
-            </div>
-            <div style={{ marginBottom: '8px' }}>
-              <strong>Selection:</strong> {selectionIds.length} items
-            </div>
-          </div>
-          
-          <div style={{ 
-            marginTop: '12px', 
-            paddingTop: '12px',
-            borderTop: '1px solid #eee',
-            fontSize: '12px', 
-            color: '#888',
-            lineHeight: '1.5'
-          }}>
-            <div>• Press 'I' to toggle instructions</div>
-            <div>• Press 'D' to toggle debug info</div>
-          </div>
-        </div>
+        <DebugPanel
+          user={user}
+          dimensions={dimensions}
+          showInstructionsPanel={showInstructionsPanel}
+        />
       )}
       
       {/* Presence list */}

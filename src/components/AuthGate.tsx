@@ -2,9 +2,10 @@
 import React, { useState } from 'react';
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
 import { auth } from '../config/firebaseClient';
+import type { User } from 'firebase/auth';
 
 interface AuthGateProps {
-  onAuthSuccess: (user: any) => void;
+  onAuthSuccess: (user: User) => void;
 }
 
 export const AuthGate: React.FC<AuthGateProps> = ({ onAuthSuccess }) => {
@@ -27,25 +28,23 @@ export const AuthGate: React.FC<AuthGateProps> = ({ onAuthSuccess }) => {
     setError('');
 
     try {
-      if (isLogin) {
-        // Login
-        const userCredential = await signInWithEmailAndPassword(auth, email, password);
-        onAuthSuccess(userCredential.user);
-      } else {
-        // Register
-        const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-        const finalDisplayName = getDisplayName(email, displayName);
-        
-        // Update the user's display name
-        await updateProfile(userCredential.user, {
-          displayName: finalDisplayName
-        });
-        
-        onAuthSuccess(userCredential.user);
+      const authFn = isLogin ? signInWithEmailAndPassword : createUserWithEmailAndPassword;
+      const name = isLogin ? '' : getDisplayName(email, displayName);
+
+      // If successful, onAuthStateChanged will handle the user state
+      const userCredential = await authFn(auth, email, password);
+      
+      // Update user display name if registering
+      if (!isLogin && userCredential.user) {
+        await updateProfile(userCredential.user, { displayName: name });
       }
-    } catch (err: any) {
-      console.error('Auth error:', err);
-      setError(err.message || 'Authentication failed');
+      
+      // Call onAuthSuccess to update the user state in App.tsx
+      onAuthSuccess(userCredential.user);
+
+    } catch (error: any) {
+      console.error('Auth error:', error);
+      setError(error.message || 'Authentication failed');
     } finally {
       setLoading(false);
     }

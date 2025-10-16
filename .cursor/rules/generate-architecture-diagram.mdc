@@ -1,0 +1,259 @@
+# Rule: Generate Updated Architecture Diagram
+
+// Description: Generate updated Mermaid architecture diagrams based on PRDs and task lists, reflecting new components, services, and data flows
+// Recommended Globs: **/docs/**/*.mmd, **/docs/**/*.md
+
+## Goal
+
+To guide an AI assistant in creating updated Mermaid architecture diagrams that reflect changes from Product Requirements Documents (PRDs) and task lists. The diagram should show the evolution of the system architecture, including new components, services, data flows, and architectural decisions.
+
+## Output
+
+- **Format:** Mermaid (`.mmd`)
+- **Location:** `docs/`
+- **Filename:** `architecture_diagram_[version].mmd` (e.g., `architecture_diagram_03.mmd`)
+
+## Process
+
+1. **Receive Input References:** The user points to a PRD file and corresponding task list
+2. **Analyze Current Architecture:** Read the existing architecture diagram to understand current state
+3. **Analyze PRD Requirements:** Extract new components, services, data flows, and architectural changes
+4. **Analyze Task List:** Review the task list to understand implementation details and new files
+5. **Identify Changes:** Compare current vs. new requirements to identify what needs updating
+6. **Generate Updated Diagram:** Create new Mermaid diagram incorporating all changes
+7. **Version Control:** Save with incremented version number
+8. **Document Changes:** Include section explaining what changed from previous version
+
+## Input Requirements
+
+The rule requires:
+- **PRD File**: Product Requirements Document with functional requirements
+- **Task List File**: Corresponding task list with specific implementation details
+- **Current Architecture**: Existing architecture diagram to build upon
+
+## Output Format
+
+The generated diagram _must_ follow this structure:
+
+```markdown
+graph LR
+
+%% ================= FRONTEND APP =================
+subgraph Client_App_React_Vite_TS
+  direction LR
+
+  A[App tsx AuthGate and Canvas]
+  ZS[Zustand uiStore]
+  K[React Konva CanvasStage RectNode Transformer]
+  CU[CursorLayer]
+  PL[PresenceList]
+  TB[TopBar]
+  DP[DebugPanel]
+  IP[InstructionsPanel]
+  [NEW_COMPONENTS]
+
+  subgraph Hooks
+    direction TB
+    HR[useRectangles]
+    HP[usePresence]
+    HCI[useCanvasInteraction]
+    HCT[useCursorTracking]
+    HGKS[useGlobalKeyboardShortcuts]
+    HRI[useRectangleInteraction]
+    [NEW_HOOKS]
+  end
+
+  subgraph Services
+    direction TB
+    SR[rectangles ts]
+    SP[presence ts]
+    [NEW_SERVICES]
+  end
+
+  subgraph Utils
+    direction TB
+    UTH[throttle ts]
+    UGE[geometry ts]
+    UCO[colors ts]
+    [NEW_UTILS]
+  end
+
+  CF[firebaseClient ts]
+
+  [COMPONENT_CONNECTIONS]
+end
+
+%% ================= BACKEND FIREBASE =================
+subgraph Firebase_Backend
+  direction TB
+  FA[Firebase Auth]
+  FS[Cloud Firestore rectangles]
+  RT[Realtime Database presence + transforms]
+  [NEW_BACKEND_SERVICES]
+end
+
+%% ================= DATA AND AUTH FLOWS =================
+[FLOW_CONNECTIONS]
+
+%% ================= ARCHITECTURAL CHANGES FROM PREVIOUS =================
+subgraph Key_Changes_From_Previous
+  direction TB
+  [CHANGE_DESCRIPTIONS]
+end
+
+%% ================= NEW DATA FLOW STRATEGY =================
+subgraph New_Data_Flow_Strategy
+  direction TB
+  [NEW_DATA_FLOWS]
+end
+
+%% ================= IMPLEMENTATION STATUS =================
+subgraph Implementation_Status
+  direction TB
+  [STATUS_ITEMS]
+end
+```
+
+## Component Categories
+
+### Frontend Components
+- **App Components**: Main application components (App, AuthGate, Canvas, etc.)
+- **UI Components**: User interface elements (TopBar, DebugPanel, etc.)
+- **Canvas Components**: Drawing and interaction components
+- **New Components**: Components added by the PRD/tasks
+
+### Hooks
+- **Data Hooks**: useRectangles, usePresence, etc.
+- **Interaction Hooks**: useCanvasInteraction, useRectangleInteraction, etc.
+- **Utility Hooks**: useGlobalKeyboardShortcuts, etc.
+- **New Hooks**: Hooks added by the PRD/tasks
+
+### Services
+- **Data Services**: rectangles.ts, presence.ts, etc.
+- **New Services**: Services added by the PRD/tasks
+- **External Services**: Firebase, APIs, etc.
+
+### Utilities
+- **Core Utils**: geometry.ts, throttle.ts, colors.ts, etc.
+- **New Utils**: Utilities added by the PRD/tasks
+
+## Data Flow Documentation
+
+### Connection Types
+- **Data Flow**: `Service --> Hook --> Component`
+- **State Flow**: `Component --> Store --> Component`
+- **Auth Flow**: `AuthGate --> Firebase Auth --> Services`
+- **Real-time Flow**: `Component --> RTDB --> All Clients`
+- **Persistence Flow**: `Component --> Firestore --> Long-term Storage`
+
+### Flow Documentation
+- **Real-time Path**: User interaction → RTDB → All clients (instant)
+- **Persistence Path**: Operation completion → Firestore → Long-term storage
+- **Hybrid Path**: RTDB → Firestore (background sync)
+
+## Change Documentation
+
+### Required Sections
+1. **Key Changes From Previous**: List all architectural changes
+2. **New Data Flow Strategy**: Explain new data flow patterns
+3. **Implementation Status**: Show what's complete vs. planned
+4. **New Components/Services**: Highlight additions
+5. **Updated Connections**: Show new data flows
+
+### Change Categories
+- **New Components**: Components added by the feature
+- **New Services**: Services added by the feature
+- **New Hooks**: Hooks added by the feature
+- **New Utilities**: Utilities added by the feature
+- **Updated Data Flows**: Changes to existing data flows
+- **New Data Flows**: Completely new data flow patterns
+- **Backend Changes**: Changes to Firebase or other backend services
+
+## Version Control
+
+### Naming Convention
+- **Current**: `architecture_diagram_02.mmd`
+- **Next**: `architecture_diagram_03.mmd`
+- **Pattern**: `architecture_diagram_[version].mmd`
+
+### Version Increment Rules
+- **Major Changes**: New architecture patterns, new backend services
+- **Minor Changes**: New components, new hooks, updated data flows
+- **Patch Changes**: Bug fixes, minor updates to existing components
+
+## Quality Standards
+
+### Completeness
+- **All Components**: Include every component mentioned in tasks
+- **All Services**: Include every service mentioned in tasks
+- **All Hooks**: Include every hook mentioned in tasks
+- **All Connections**: Show all data flows and relationships
+
+### Accuracy
+- **File Names**: Use exact file names from task list
+- **Connections**: Show accurate data flow relationships
+- **Dependencies**: Include all dependencies and imports
+
+### Clarity
+- **Clear Labels**: Use descriptive names for all elements
+- **Logical Grouping**: Group related components together
+- **Clear Flows**: Show data flow direction and purpose
+
+## Integration with Existing Architecture
+
+### Build Upon Existing
+- **Preserve Structure**: Maintain existing diagram structure
+- **Add New Elements**: Insert new components in logical locations
+- **Update Connections**: Modify existing flows as needed
+- **Maintain Consistency**: Use same naming and grouping conventions
+
+### Handle Dependencies
+- **Component Dependencies**: Show how new components depend on existing ones
+- **Service Dependencies**: Show how new services integrate with existing ones
+- **Data Dependencies**: Show how new data flows affect existing ones
+
+## Examples
+
+### Good Component Addition:
+```
+subgraph New_Components
+  direction TB
+  NT[NewTransformService]
+  NH[useNewHook]
+end
+```
+
+### Good Data Flow Addition:
+```
+%% New real-time transform flow
+HR --> RT
+RT --> HR
+RT --> NT
+NT --> RT
+```
+
+### Good Change Documentation:
+```
+subgraph Key_Changes_From_Previous
+  direction TB
+  C1[Added NewTransformService for real-time operations]
+  C2[Added useNewHook for transform management]
+  C3[Updated data flow to include RTDB transforms]
+  C4[Added hybrid storage strategy]
+end
+```
+
+## Final Instructions
+
+1. Always read the existing architecture diagram first
+2. Extract all new components, services, and hooks from the task list
+3. Identify all new data flows from the PRD
+4. Update the diagram structure to include new elements
+5. Document all changes in the Key_Changes section
+6. Increment the version number appropriately
+7. Save to `docs/` directory with new version number
+8. Ensure all connections and flows are accurate and complete
+
+## Target Audience
+
+Assume the primary reader is a **developer or architect** who needs to understand the system evolution and new architectural patterns.

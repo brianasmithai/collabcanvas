@@ -1,0 +1,162 @@
+# Rule: Generate Detailed Task List with Pull Request Organization
+
+// Description: Generate comprehensive task lists organized by pull requests with specific file listings and test specifications
+// Recommended Globs: **/tasks/**/*.md, **/tasks-*.md
+
+## Goal
+
+To guide an AI assistant in creating detailed, pull request-organized task lists in Markdown format based on existing Product Requirements Documents (PRDs). The task list should follow a proven format with specific file listings, test specifications, and consistent PR numbering.
+
+## Output
+
+- **Format:** Markdown (`.md`)
+- **Location:** `docs/`
+- **Filename:** `tasks-[feature-name].md` (e.g., `tasks-real-time-sync.md`)
+
+## Process
+
+1. **Receive PRD Reference:** The user points the AI to a specific PRD file
+2. **Analyze PRD:** The AI reads and analyzes the functional requirements, user stories, and other sections of the specified PRD
+3. **Check Existing Tasks:** Review existing task files to determine the next PR number in sequence
+4. **Generate Pull Request Structure:** Create 4-6 pull requests that logically break down the feature implementation
+5. **Add Detailed Subtasks:** Each PR should have 4-6 specific, actionable subtasks
+6. **Specify Files:** Every subtask must list exact files to be created or edited
+7. **Include Tests:** Each PR must specify test files and testing approach
+8. **Save Task List:** Save the generated document in the `docs/` directory
+
+## Output Format
+
+The generated task list _must_ follow this exact structure:
+
+```markdown
+# CollabCanvas — [Feature Name] Task Lists (Detailed, Grouped by Pull Requests)
+
+> **Based on PRD:** `[prd-filename].md`  
+> **Stack:** React + Vite + TypeScript + Konva/react-konva + Zustand + Firebase (Auth + Firestore + RTDB)  
+> **Format:** Each PR has actionable subtasks, and **every subtask lists the exact files** created/edited.  
+> **Focus:** [Brief description of the feature focus]
+
+---
+
+## PR [N] — [PR Title]
+**Goal:** [Clear, specific goal for this PR]
+
+- [ ] [Specific subtask description]  
+  **Files:** `path/to/file.ts` (new/edit), `path/to/another.tsx` (edit)
+- [ ] [Another specific subtask]  
+  **Files:** `path/to/file.ts` (edit)
+- [ ] [Third subtask with clear action]  
+  **Files:** `path/to/file.ts` (new), `path/to/test.ts` (new)
+
+**Tests (bare-bones):** [Brief description of testing approach for this PR]  
+- [ ] Add `[test-filename].test.ts` - [Specific test description]  
+  **Files:** `tests/[test-filename].test.ts` (new/edit)
+- [ ] Extend `[existing-test].test.tsx` - [Specific test extension]  
+  **Files:** `tests/[existing-test].test.tsx` (edit)
+
+---
+
+[Repeat for each PR...]
+
+## Known Issues & Future Improvements
+
+### [Feature-Specific Targets]
+- **[Target 1]**: [Specific metric or goal]
+- **[Target 2]**: [Specific metric or goal]
+
+### Future Enhancements
+- [ ] **[Enhancement Name]**: [Brief description]
+- [ ] **[Another Enhancement]**: [Brief description]
+
+---
+
+### Notes & Conventions
+- Keep tests **surgical**: verify wiring/behavior, not library internals
+- Prefer **hook and utility tests** over heavy canvas interactions
+- [Feature-specific testing notes]
+- [Performance or other specific requirements]
+```
+
+## PR Numbering Convention
+
+- **Check existing task files** to determine the highest PR number used
+- **Continue numbering** from the next available number
+- **Maintain consistency** across all task lists in the project
+- **Example**: If last PR was 17, start new feature with PR 18
+
+## Subtask Requirements
+
+Each subtask must include:
+1. **Clear action verb** (Create, Implement, Update, Add, etc.)
+2. **Specific description** of what needs to be done
+3. **Exact file listings** with (new) or (edit) indicators
+4. **Logical progression** from previous subtasks
+
+## File Specification Format
+
+- **New files**: `path/to/file.ts` (new)
+- **Modified files**: `path/to/file.ts` (edit)
+- **Test files**: Always include corresponding test files
+- **Configuration files**: Include relevant config changes
+
+## Test Requirements
+
+Each PR must specify:
+1. **Test approach** (bare-bones, comprehensive, integration, etc.)
+2. **Specific test files** to be created or modified
+3. **Test descriptions** that explain what is being tested
+4. **Test file locations** following project conventions
+
+## Quality Standards
+
+- **Actionable**: Each subtask should be completable by a junior developer
+- **Specific**: Avoid vague descriptions, be precise about requirements
+- **Complete**: Include all necessary files and dependencies
+- **Testable**: Every feature must have corresponding tests
+- **Sequential**: PRs should build logically on each other
+
+## Integration with Existing Codebase
+
+- **Build on existing patterns** from the current codebase
+- **Maintain consistency** with existing file structure
+- **Follow established conventions** for naming and organization
+- **Consider dependencies** between new features and existing code
+
+## Target Audience
+
+Assume the primary reader is a **junior developer** who will implement the feature following this task list step by step.
+
+## Examples
+
+### Good Subtask:
+```
+- [ ] Implement `transforms.ts` service for RTDB operations (CRUD, subscriptions)  
+  **Files:** `src/services/transforms.ts` (new)
+```
+
+### Bad Subtask:
+```
+- [ ] Add transform functionality
+```
+
+### Good Test Specification:
+```
+**Tests (bare-bones):** Service and hook contract verification.  
+- [ ] Add `transforms.service.test.ts` - Test CRUD operations, subscription handling, error cases  
+  **Files:** `tests/transforms.service.test.ts` (new)
+```
+
+### Bad Test Specification:
+```
+**Tests:** Add some tests
+```
+
+## Final Instructions
+
+1. Always check existing task files for PR numbering
+2. Create 4-6 pull requests maximum per feature
+3. Each PR should have 4-6 subtasks maximum
+4. Every subtask must list specific files
+5. Every PR must include test specifications
+6. Follow the exact format structure provided
+7. Save to `docs/` directory with descriptive filename
