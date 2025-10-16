@@ -1,0 +1,25 @@
+{
+  "rules": {
+    // Presence data - authenticated users can read/write their own presence
+    "presence": {
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null && auth.uid == $uid",
+        ".validate": "newData.hasChildren(['name', 'displayName', 'cursor', 'selectionIds', 'updatedAt'])"
+      }
+    },
+    
+    // Transform data - authenticated users can read all, write their own
+    "transforms": {
+      "$transformId": {
+        ".read": "auth != null",
+        ".write": "auth != null && (newData.child('updatedBy').val() == auth.uid || !data.exists())",
+        ".validate": "newData.hasChildren(['id', 'x', 'y', 'width', 'height', 'rotation', 'updatedAt', 'updatedBy', 'isActive']) && newData.child('updatedBy').val() == auth.uid"
+      }
+    },
+    
+    // Default rule - deny all other access
+    ".read": false,
+    ".write": false
+  }
+}

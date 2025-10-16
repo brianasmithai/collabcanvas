@@ -33,3 +33,22 @@ export interface ViewportState {
   x: number; // pan x offset
   y: number; // pan y offset
 }
+
+// Real-time transform interface (Realtime Database)
+export interface Transform {
+  id: string; // rectangle id
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  rotation: number; // degrees
+  updatedAt: number; // ms since epoch
+  updatedBy: string; // Firebase Auth uid
+  isActive: boolean; // true during active transformation
+}
+
+// Transform operation types
+export type TransformOperation = 'move' | 'resize' | 'rotate' | 'create' | 'delete';
+
+// Transform subscription callback
+export type TransformCallback = (transforms: Record<string, Transform>) => void;

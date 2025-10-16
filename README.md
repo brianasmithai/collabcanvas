@@ -95,12 +95,21 @@ Copy and paste these rules into your Realtime Database Rules in the Firebase Con
 {
   "rules": {
     "presence": {
-      ".read": "auth != null",
-      ".write": "auth != null",
       "$uid": {
-        ".write": "auth != null && auth.uid == $uid"
+        ".read": "auth != null",
+        ".write": "auth != null && auth.uid == $uid",
+        ".validate": "newData.hasChildren(['name', 'displayName', 'cursor', 'selectionIds', 'updatedAt'])"
       }
-    }
+    },
+    "transforms": {
+      "$transformId": {
+        ".read": "auth != null",
+        ".write": "auth != null && (newData.child('updatedBy').val() == auth.uid || !data.exists())",
+        ".validate": "newData.hasChildren(['id', 'x', 'y', 'width', 'height', 'rotation', 'updatedAt', 'updatedBy', 'isActive']) && newData.child('updatedBy').val() == auth.uid"
+      }
+    },
+    ".read": false,
+    ".write": false
   }
 }
 ```
@@ -114,10 +123,12 @@ Copy and paste these rules into your Realtime Database Rules in the Firebase Con
 - ✅ **Read access**: All authenticated users can read rectangles (for collaboration)
 
 **Realtime Database Rules:**
-- ✅ **Authentication required**: Only authenticated users can access presence data
+- ✅ **Authentication required**: Only authenticated users can access presence and transform data
 - ✅ **User isolation**: Users can only write to their own presence node (`/presence/{uid}`)
-- ✅ **Read access**: All authenticated users can read all presence data (for collaboration)
-- ✅ **Write access**: All authenticated users can write to presence (for cursor updates)
+- ✅ **Transform ownership**: Users can only write transforms they own (updatedBy field must match auth.uid)
+- ✅ **Read access**: All authenticated users can read all presence and transform data (for collaboration)
+- ✅ **Data validation**: Presence and transform data must include all required fields
+- ✅ **Default deny**: All other paths are denied by default for security
 
 ## Available Scripts
 

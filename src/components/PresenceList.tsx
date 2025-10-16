@@ -51,7 +51,7 @@ export const PresenceList: React.FC<PresenceListProps> = ({
       <div className="presence-users">
         {onlineUsers.map(({ uid, name, lastSeen }) => {
           const timeSinceUpdate = Date.now() - lastSeen;
-          const isActive = timeSinceUpdate < 30000; // Active if updated within 30 seconds
+          const isActive = timeSinceUpdate < 60000; // Active if updated within 60 seconds
           const userColor = getUserColor(uid, allUserIds);
           
           return (

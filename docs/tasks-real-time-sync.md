@@ -7,24 +7,24 @@
 
 ---
 
-## PR 18 — RTDB Integration & Transform Service
+## PR 18 — RTDB Integration & Transform Service ✅
 **Goal:** Set up Firebase Realtime Database integration and create transform service layer.
 
-- [ ] Create RTDB configuration and connection setup  
+- [x] Create RTDB configuration and connection setup  
   **Files:** `src/config/firebaseClient.ts` (edit), `firebase.json` (edit)
-- [ ] Implement `transforms.ts` service for RTDB operations (CRUD, subscriptions)  
+- [x] Implement `transforms.ts` service for RTDB operations (CRUD, subscriptions)  
   **Files:** `src/services/transforms.ts` (new)
-- [ ] Add transform types and interfaces to support real-time operations  
+- [x] Add transform types and interfaces to support real-time operations  
   **Files:** `src/types.ts` (edit)
-- [ ] Create `useTransforms` hook for managing transform subscriptions  
+- [x] Create `useTransforms` hook for managing transform subscriptions  
   **Files:** `src/hooks/useTransforms.ts` (new)
-- [ ] Update Firebase security rules for RTDB transforms path  
+- [x] Update Firebase security rules for RTDB transforms path  
   **Files:** `firebase.json` (edit), `README.md` (edit: security rules section)
 
 **Tests (bare-bones):** Service and hook contract verification.  
-- [ ] Add `transforms.service.test.ts` - Test CRUD operations, subscription handling, error cases  
+- [x] Add `transforms.service.test.ts` - Test CRUD operations, subscription handling, error cases  
   **Files:** `tests/transforms.service.test.ts` (new)
-- [ ] Add `transforms.hook.test.tsx` - Test hook subscription, state updates, cleanup  
+- [x] Add `transforms.hook.test.tsx` - Test hook subscription, state updates, cleanup  
   **Files:** `tests/transforms.hook.test.tsx` (new)
 
 ---
