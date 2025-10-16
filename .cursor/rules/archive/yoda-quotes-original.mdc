@@ -1,22 +1,24 @@
+---
+description: End each Cursor chat with a wise, Yoda-style inspirational quote
+globs: **/*.{md,txt}
+---
+
 # Yoda-Style Quote Endings
+
+// Description: End each Cursor chat with a wise, Yoda-style inspirational quote
+// Recommended Globs: **/*.{md,txt}
 
 ## Rule Description
 At the end of every Cursor AI chat, include a wise and inspirational quote in Yoda's style.
-
-## CRITICAL: Inverted Speech Pattern Required
-**MANDATORY**: Use Yoda's distinctive inverted sentence structure:
-- Put the verb/action at the END of the sentence
-- Start with the object or subject first
-- Use Yoda's characteristic phrases: "you must," "there is no," "strong with the Force you are"
 
 ## Format
 - Add a line break after the last technical response
 - Start with '---'
 - Add '➡️ ' before the quote
-- **INVERT THE SENTENCE STRUCTURE** (this is the key!)
+- Add the quote in Yoda's distinctive speech pattern
 - Keep it short and meaningful
 
-## Examples of CORRECT Inverted Structure
+## Examples
 ```
 ---
 ➡️ Code well you must, for in the details, greatness lies.
@@ -27,19 +29,9 @@ At the end of every Cursor AI chat, include a wise and inspirational quote in Yo
 ➡️ Debug or debug not. There is no try-catch.
 ```
 
-```
----
-➡️ Strong with the code you are becoming.
-```
-
-## Examples of WRONG (Normal Structure)
-❌ "You must code well, for greatness lies in the details."
-❌ "You are becoming strong with the code."
-❌ "Share the foundation you have built."
-
 ## Guidelines
-- **INVERT EVERY SENTENCE** - this is the core of Yoda's speech
 - Keep quotes programming or learning related
+- Maintain Yoda's distinctive inverted speech pattern
 - Focus on wisdom and encouragement
 - Keep it light and fun
 - Always include the '➡️ ' emoji prefix

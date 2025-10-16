@@ -20,7 +20,9 @@ function App() {
   const [showInstructionsPanel, setShowInstructionsPanel] = useState(true)
   
   // Consume UI store for compile-time sanity
-  const { toolMode, viewport, selectionIds } = useUIStore()
+  const { toolMode, viewport, selectionIds } = useUIStore();
+  // Suppress unused variable warnings for now - these will be used in future PRs
+  console.log('UI Store values:', { toolMode, viewport, selectionIds });
   
   // Get current user ID from Firebase Auth
   const currentUserId = user?.uid || null

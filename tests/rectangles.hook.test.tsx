@@ -1,4 +1,4 @@
-// Tests for useRectangles hook
+// Tests for useRectangles hook with hybrid storage
 import { renderHook, act } from '@testing-library/react';
 import { useRectangles } from '../src/hooks/useRectangles';
 import { 
@@ -36,6 +36,25 @@ vi.mock('firebase/firestore', () => ({
 
 vi.mock('../src/config/firebaseClient', () => ({
   firestore: {},
+  rtdb: {},
+}));
+
+// Mock hybrid rectangles service
+vi.mock('../src/services/rectangles', () => ({
+  hybridRectanglesService: {
+    createRectangleHybrid: vi.fn(),
+    updateRectangleHybrid: vi.fn(),
+    deleteRectangleHybrid: vi.fn(),
+    subscribeToRectanglesHybrid: vi.fn(),
+    validateDataConsistency: vi.fn(),
+    forceSyncAllTransformsToFirestore: vi.fn(),
+    cleanup: vi.fn(),
+  },
+  createRectangle: vi.fn(),
+  updateRectangle: vi.fn(),
+  deleteRectangle: vi.fn(),
+  deleteRectangles: vi.fn(),
+  subscribeToRectangles: vi.fn(),
 }));
 
 describe('useRectangles', () => {
@@ -47,12 +66,25 @@ describe('useRectangles', () => {
   const mockQuery = query as any;
   const mockOrderBy = orderBy as any;
 
-  beforeEach(() => {
+  beforeEach(async () => {
     vi.clearAllMocks();
     mockOnSnapshot.mockReturnValue(vi.fn());
+    
+    // Mock hybrid service methods
+    const { hybridRectanglesService } = await import('../src/services/rectangles');
+    (hybridRectanglesService.createRectangleHybrid as any).mockResolvedValue('test-id');
+    (hybridRectanglesService.updateRectangleHybrid as any).mockResolvedValue(undefined);
+    (hybridRectanglesService.deleteRectangleHybrid as any).mockResolvedValue(undefined);
+    (hybridRectanglesService.subscribeToRectanglesHybrid as any).mockReturnValue(vi.fn());
+    (hybridRectanglesService.validateDataConsistency as any).mockResolvedValue({
+      consistent: true,
+      inconsistencies: []
+    });
+    (hybridRectanglesService.forceSyncAllTransformsToFirestore as any).mockResolvedValue(undefined);
+    (hybridRectanglesService.cleanup as any).mockReturnValue(undefined);
   });
 
-  it('should return initial state with loading true', () => {
+  it('should return initial state with loading true and hybrid methods', () => {
     const { result } = renderHook(() => useRectangles());
     
     expect(result.current.rectangles).toEqual([]);
@@ -62,57 +94,60 @@ describe('useRectangles', () => {
     expect(typeof result.current.updateRect).toBe('function');
     expect(typeof result.current.deleteRect).toBe('function');
     expect(typeof result.current.deleteRects).toBe('function');
+    expect(typeof result.current.validateConsistency).toBe('function');
+    expect(typeof result.current.forceSyncAll).toBe('function');
   });
 
-  it('should set up Firestore subscription on mount', () => {
+  it('should set up hybrid subscription on mount', async () => {
+    const { hybridRectanglesService } = await import('../src/services/rectangles');
+    
     renderHook(() => useRectangles());
     
-    expect(mockCollection).toHaveBeenCalledWith(firestore, 'rectangles');
-    expect(mockOrderBy).toHaveBeenCalledWith('updatedAt', 'desc');
-    expect(mockQuery).toHaveBeenCalled();
-    expect(mockOnSnapshot).toHaveBeenCalled();
+    expect(hybridRectanglesService.subscribeToRectanglesHybrid).toHaveBeenCalled();
   });
 
-  it('should update rectangles when Firestore data changes', () => {
+  it('should update rectangles when hybrid data changes', async () => {
     const { result } = renderHook(() => useRectangles());
+    const { hybridRectanglesService } = await import('../src/services/rectangles');
     
     // Verify initial state
     expect(result.current.rectangles).toEqual([]);
     expect(result.current.loading).toBe(true);
     expect(result.current.error).toBe(null);
     
-    // Verify that onSnapshot was called to set up subscription
-    expect(mockOnSnapshot).toHaveBeenCalled();
+    // Verify that hybrid subscription was called
+    expect(hybridRectanglesService.subscribeToRectanglesHybrid).toHaveBeenCalled();
   });
 
-  it('should handle empty Firestore data', () => {
+  it('should handle empty hybrid data', async () => {
     const { result } = renderHook(() => useRectangles());
+    const { hybridRectanglesService } = await import('../src/services/rectangles');
     
     // Verify initial state
     expect(result.current.rectangles).toEqual([]);
     expect(result.current.loading).toBe(true);
     expect(result.current.error).toBe(null);
     
-    // Verify that onSnapshot was called to set up subscription
-    expect(mockOnSnapshot).toHaveBeenCalled();
+    // Verify that hybrid subscription was called
+    expect(hybridRectanglesService.subscribeToRectanglesHybrid).toHaveBeenCalled();
   });
 
-  it('should handle Firestore errors', () => {
+  it('should handle hybrid data errors', async () => {
     const { result } = renderHook(() => useRectangles());
+    const { hybridRectanglesService } = await import('../src/services/rectangles');
     
     // Verify initial state
     expect(result.current.rectangles).toEqual([]);
     expect(result.current.loading).toBe(true);
     expect(result.current.error).toBe(null);
     
-    // Verify that onSnapshot was called to set up subscription
-    expect(mockOnSnapshot).toHaveBeenCalled();
+    // Verify that hybrid subscription was called
+    expect(hybridRectanglesService.subscribeToRectanglesHybrid).toHaveBeenCalled();
   });
 
-  it('should create rectangle successfully', async () => {
+  it('should create rectangle with hybrid storage successfully', async () => {
     const { result } = renderHook(() => useRectangles());
-    
-    mockAddDoc.mockResolvedValue({ id: 'new-rect-id' });
+    const { hybridRectanglesService } = await import('../src/services/rectangles');
     
     const newRect = {
       x: 100,
@@ -129,14 +164,13 @@ describe('useRectangles', () => {
       createdId = await result.current.createRect(newRect);
     });
 
-    expect(createdId!).toBe('new-rect-id');
-    expect(mockAddDoc).toHaveBeenCalled();
+    expect(createdId!).toBe('test-id');
+    expect(hybridRectanglesService.createRectangleHybrid).toHaveBeenCalledWith(newRect);
   });
 
-  it('should update rectangle successfully', async () => {
+  it('should update rectangle with hybrid storage successfully', async () => {
     const { result } = renderHook(() => useRectangles());
-    
-    mockUpdateDoc.mockResolvedValue(undefined);
+    const { hybridRectanglesService } = await import('../src/services/rectangles');
     
     const updates = {
       x: 200,
@@ -149,38 +183,38 @@ describe('useRectangles', () => {
       await result.current.updateRect('rect1', updates);
     });
 
-    expect(mockUpdateDoc).toHaveBeenCalled();
+    expect(hybridRectanglesService.updateRectangleHybrid).toHaveBeenCalledWith('rect1', updates);
   });
 
-  it('should delete rectangle successfully', async () => {
+  it('should delete rectangle with hybrid storage successfully', async () => {
     const { result } = renderHook(() => useRectangles());
-    
-    mockDeleteDoc.mockResolvedValue(undefined);
+    const { hybridRectanglesService } = await import('../src/services/rectangles');
 
     await act(async () => {
       await result.current.deleteRect('rect1');
     });
 
-    expect(mockDeleteDoc).toHaveBeenCalled();
+    expect(hybridRectanglesService.deleteRectangleHybrid).toHaveBeenCalledWith('rect1');
   });
 
-  it('should delete multiple rectangles successfully', async () => {
+  it('should delete multiple rectangles with hybrid storage successfully', async () => {
     const { result } = renderHook(() => useRectangles());
-    
-    mockDeleteDoc.mockResolvedValue(undefined);
+    const { hybridRectanglesService, deleteRectangles } = await import('../src/services/rectangles');
 
     await act(async () => {
       await result.current.deleteRects(['rect1', 'rect2', 'rect3']);
     });
 
-    expect(mockDeleteDoc).toHaveBeenCalledTimes(3);
+    expect(deleteRectangles).toHaveBeenCalledWith(['rect1', 'rect2', 'rect3']);
+    expect(hybridRectanglesService.deleteRectangleHybrid).toHaveBeenCalledTimes(3);
   });
 
   it('should handle create rectangle errors', async () => {
     const { result } = renderHook(() => useRectangles());
+    const { hybridRectanglesService } = await import('../src/services/rectangles');
     
     const mockError = new Error('Failed to create rectangle');
-    mockAddDoc.mockRejectedValue(mockError);
+    (hybridRectanglesService.createRectangleHybrid as any).mockRejectedValue(mockError);
     
     const newRect = {
       x: 100,
@@ -197,5 +231,138 @@ describe('useRectangles', () => {
         await result.current.createRect(newRect);
       });
     }).rejects.toThrow('Failed to create rectangle');
+  });
+
+  describe('Hybrid Storage Methods', () => {
+    it('should validate data consistency successfully', async () => {
+      const { result } = renderHook(() => useRectangles());
+      const { hybridRectanglesService } = await import('../src/services/rectangles');
+      
+      const consistencyResult = {
+        consistent: true,
+        inconsistencies: []
+      };
+      (hybridRectanglesService.validateDataConsistency as any).mockResolvedValue(consistencyResult);
+
+      let result_data: any;
+      await act(async () => {
+        result_data = await result.current.validateConsistency();
+      });
+
+      expect(result_data).toEqual(consistencyResult);
+      expect(hybridRectanglesService.validateDataConsistency).toHaveBeenCalled();
+    });
+
+    it('should handle data consistency validation errors', async () => {
+      const { result } = renderHook(() => useRectangles());
+      const { hybridRectanglesService } = await import('../src/services/rectangles');
+      
+      const mockError = new Error('Validation failed');
+      (hybridRectanglesService.validateDataConsistency as any).mockRejectedValue(mockError);
+
+      await expect(async () => {
+        await act(async () => {
+          await result.current.validateConsistency();
+        });
+      }).rejects.toThrow('Validation failed');
+    });
+
+    it('should force sync all transforms successfully', async () => {
+      const { result } = renderHook(() => useRectangles());
+      const { hybridRectanglesService } = await import('../src/services/rectangles');
+
+      await act(async () => {
+        await result.current.forceSyncAll();
+      });
+
+      expect(hybridRectanglesService.forceSyncAllTransformsToFirestore).toHaveBeenCalled();
+    });
+
+    it('should handle force sync errors', async () => {
+      const { result } = renderHook(() => useRectangles());
+      const { hybridRectanglesService } = await import('../src/services/rectangles');
+      
+      const mockError = new Error('Sync failed');
+      (hybridRectanglesService.forceSyncAllTransformsToFirestore as any).mockRejectedValue(mockError);
+
+      await expect(async () => {
+        await act(async () => {
+          await result.current.forceSyncAll();
+        });
+      }).rejects.toThrow('Sync failed');
+    });
+  });
+
+  describe('State Synchronization', () => {
+    it('should handle hybrid subscription updates', async () => {
+      const { hybridRectanglesService } = await import('../src/services/rectangles');
+      
+      // Mock subscription callback
+      let subscriptionCallback: ((rectangles: any[]) => void) | null = null;
+      (hybridRectanglesService.subscribeToRectanglesHybrid as any).mockImplementation((callback: any) => {
+        subscriptionCallback = callback;
+        return vi.fn(); // unsubscribe function
+      });
+
+      const { result } = renderHook(() => useRectangles());
+
+      // Simulate data update
+      const testRectangles = [
+        {
+          id: 'rect-1',
+          x: 100,
+          y: 200,
+          width: 150,
+          height: 100,
+          rotation: 0,
+          updatedAt: Date.now(),
+          updatedBy: 'user1'
+        }
+      ];
+
+      act(() => {
+        subscriptionCallback?.(testRectangles);
+      });
+
+      expect(result.current.rectangles).toEqual(testRectangles);
+      expect(result.current.loading).toBe(false);
+      expect(result.current.error).toBe(null);
+    });
+
+    it('should handle hybrid subscription errors', async () => {
+      const { hybridRectanglesService } = await import('../src/services/rectangles');
+      
+      // Mock subscription with error callback
+      let errorCallback: ((error: Error) => void) | null = null;
+      (hybridRectanglesService.subscribeToRectanglesHybrid as any).mockImplementation((callback: any, onError: any) => {
+        errorCallback = onError;
+        return vi.fn(); // unsubscribe function
+      });
+
+      const { result } = renderHook(() => useRectangles());
+
+      // Simulate error
+      const testError = new Error('Subscription failed');
+      act(() => {
+        errorCallback?.(testError);
+      });
+
+      expect(result.current.error).toEqual(testError);
+      expect(result.current.loading).toBe(false);
+    });
+
+    it('should cleanup hybrid subscriptions on unmount', async () => {
+      const { hybridRectanglesService } = await import('../src/services/rectangles');
+      
+      const mockUnsubscribe = vi.fn();
+      (hybridRectanglesService.subscribeToRectanglesHybrid as any).mockReturnValue(mockUnsubscribe);
+
+      const { unmount } = renderHook(() => useRectangles());
+
+      unmount();
+
+      expect(mockUnsubscribe).toHaveBeenCalled();
+      expect(hybridRectanglesService.cleanup).toHaveBeenCalled();
+    });
   });
 });

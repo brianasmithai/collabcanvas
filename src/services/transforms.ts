@@ -4,15 +4,15 @@ import {
   set, 
   remove, 
   onValue, 
-  off, 
   push, 
   get,
-  serverTimestamp,
-  DatabaseReference,
+  serverTimestamp
+} from 'firebase/database';
+import type { 
   Unsubscribe
 } from 'firebase/database';
 import { rtdb } from '../config/firebaseClient';
-import type { Transform, TransformOperation, TransformCallback } from '../types';
+import type { Transform, TransformCallback } from '../types';
 
 // RTDB paths
 const TRANSFORMS_PATH = 'transforms';
@@ -81,6 +81,7 @@ export class TransformService {
       Object.keys(data).forEach(id => {
         transforms[id] = { ...data[id], id };
       });
+      console.log('🔄 TransformService: Received transform updates:', Object.keys(transforms).length, 'transforms');
       callback(transforms);
     }, (error) => {
       console.error('Error in transform subscription:', error);

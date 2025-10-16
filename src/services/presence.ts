@@ -9,6 +9,7 @@ import type { Presence } from '../types';
  * @param presence - Presence data to store
  */
 export const setPresence = async (uid: string, presence: Omit<Presence, 'updatedAt'>) => {
+  console.log('🔗 setPresence: Attempting to set presence for', uid, presence);
   const presenceRef = ref(rtdb, `presence/${uid}`);
   
   const presenceData: Presence = {
@@ -16,10 +17,17 @@ export const setPresence = async (uid: string, presence: Omit<Presence, 'updated
     updatedAt: Date.now(),
   };
   
-  await set(presenceRef, presenceData);
-  
-  // Set up automatic cleanup when user disconnects
-  onDisconnect(presenceRef).remove();
+  try {
+    await set(presenceRef, presenceData);
+    console.log('✅ setPresence: Successfully set presence for', uid);
+    
+    // Set up automatic cleanup when user disconnects
+    onDisconnect(presenceRef).remove();
+    console.log('🔌 setPresence: Set up disconnect cleanup for', uid);
+  } catch (error) {
+    console.error('❌ setPresence: Failed to set presence for', uid, error);
+    throw error;
+  }
 };
 
 /**
@@ -45,10 +53,13 @@ export const setInitialPresence = async (uid: string, displayName: string) => {
  * @param cursor - New cursor position
  */
 export const updateCursor = async (uid: string, cursor: { x: number; y: number }) => {
+  console.log('🖱️ updateCursor: Updating cursor for', uid, 'to', cursor);
   // Get current user data to preserve name/displayName
   const presenceRef = ref(rtdb, `presence/${uid}`);
   const snapshot = await get(presenceRef);
   const currentData = snapshot.val();
+  
+  console.log('🖱️ updateCursor: Current data for', uid, ':', currentData);
   
   // Ensure name and displayName are preserved
   const updatedData = {
@@ -58,8 +69,13 @@ export const updateCursor = async (uid: string, cursor: { x: number; y: number }
     // Note: do NOT set default name/displayName here to avoid overwriting with generic labels
   };
   
-  await set(presenceRef, updatedData);
-  console.log('✅ Cursor updated successfully with preserved user data');
+  try {
+    await set(presenceRef, updatedData);
+    console.log('✅ updateCursor: Cursor updated successfully for', uid);
+  } catch (error) {
+    console.error('❌ updateCursor: Failed to update cursor for', uid, error);
+    throw error;
+  }
 };
 
 /**
@@ -68,10 +84,13 @@ export const updateCursor = async (uid: string, cursor: { x: number; y: number }
  * @param selectionIds - Array of selected rectangle IDs
  */
 export const updateSelection = async (uid: string, selectionIds: string[]) => {
+  console.log('🎯 updateSelection: Updating selection for', uid, 'to', selectionIds);
   // Get current user data to preserve name/displayName
   const presenceRef = ref(rtdb, `presence/${uid}`);
   const snapshot = await get(presenceRef);
   const currentData = snapshot.val();
+  
+  console.log('🎯 updateSelection: Current data for', uid, ':', currentData);
   
   // Ensure name and displayName are preserved
   const updatedData = {
@@ -81,8 +100,13 @@ export const updateSelection = async (uid: string, selectionIds: string[]) => {
     // Note: do NOT set default name/displayName here to avoid overwriting with generic labels
   };
   
-  await set(presenceRef, updatedData);
-  console.log('✅ Selection updated successfully with preserved user data');
+  try {
+    await set(presenceRef, updatedData);
+    console.log('✅ updateSelection: Selection updated successfully for', uid, 'to', selectionIds);
+  } catch (error) {
+    console.error('❌ updateSelection: Failed to update selection for', uid, error);
+    throw error;
+  }
 };
 
 /**

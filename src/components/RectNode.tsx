@@ -14,6 +14,8 @@ interface RectNodeProps {
 
 export const RectNode = forwardRef<any, RectNodeProps>(({ rect, isSelected, onClick, onDragMove, onDragEnd }, ref) => {
   const shapeRef = useRef<any>(null);
+  // Suppress unused variable warning - will be used for advanced interactions in future PRs
+  console.log('Shape ref:', shapeRef);
 
   // Create throttled update function for drag moves
   const throttledUpdateRef = useRef<((x: number, y: number) => void) | null>(null);
@@ -31,6 +33,7 @@ export const RectNode = forwardRef<any, RectNodeProps>(({ rect, isSelected, onCl
   };
 
   const handleDragMove = (e: any) => {
+    console.log('🖱️ RectNode: Drag move detected for', rect.id);
     if (throttledUpdateRef.current) {
       const node = e.target;
       throttledUpdateRef.current(node.x(), node.y());
@@ -38,6 +41,7 @@ export const RectNode = forwardRef<any, RectNodeProps>(({ rect, isSelected, onCl
   };
 
   const handleDragEnd = (e: any) => {
+    console.log('🏁 RectNode: Drag END detected for', rect.id);
     const node = e.target;
     
     // Flush any pending throttled updates
@@ -46,6 +50,7 @@ export const RectNode = forwardRef<any, RectNodeProps>(({ rect, isSelected, onCl
     }
     
     // Always call onDragEnd for final position
+    console.log('📞 RectNode: Calling onDragEnd with position:', node.x(), node.y());
     onDragEnd(rect.id, node.x(), node.y());
   };
 

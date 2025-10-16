@@ -63,28 +63,35 @@ export const useRectangleInteraction = (
   }, [selectionIds, setSelectionIds]);
 
   const handleRectDragMove = useCallback(async (rectId: string, newX: number, newY: number) => {
+    console.log('🔄 useRectangleInteraction: Drag move received for', rectId, 'at', newX, newY);
     try {
+      // Real-time update: RTDB only, no Firestore sync yet
       await updateRect(rectId, { 
         x: newX, 
         y: newY, 
         updatedAt: Date.now(),
         updatedBy: currentUserId || 'local-user'
-      });
+      }, false); // isTransformComplete = false
+      console.log('✅ useRectangleInteraction: Drag move update sent to RTDB');
     } catch (err) {
-      console.error('Failed to update rectangle position during drag:', err);
+      console.error('❌ useRectangleInteraction: Failed to update rectangle position during drag:', err);
     }
   }, [updateRect, currentUserId]);
 
   const handleRectDragEnd = useCallback(async (rectId: string, newX: number, newY: number) => {
+    console.log('🎯 useRectangleInteraction: Drag END received for', rectId, 'at', newX, newY);
     try {
+      // Final update: RTDB + immediate Firestore sync
+      console.log('🎯 useRectangleInteraction: Drag ended, saving final position to both RTDB and Firestore');
       await updateRect(rectId, { 
         x: newX, 
         y: newY, 
         updatedAt: Date.now(),
         updatedBy: currentUserId || 'local-user'
-      });
+      }, true); // isTransformComplete = true
+      console.log('✅ useRectangleInteraction: Final position saved to both RTDB and Firestore');
     } catch (err) {
-      console.error('Failed to update rectangle position:', err);
+      console.error('❌ useRectangleInteraction: Failed to update rectangle position:', err);
     }
   }, [updateRect, currentUserId]);
 
@@ -101,7 +108,8 @@ export const useRectangleInteraction = (
   if (!throttledTransformUpdate.current) {
     throttledTransformUpdate.current = throttle(async (updates: Partial<Rect>, rectId: string) => {
       try {
-        await updateRect(rectId, updates);
+        // Real-time transform update: RTDB only, no Firestore sync yet
+        await updateRect(rectId, updates, false); // isTransformComplete = false
       } catch (err) {
         console.error('Failed to update rectangle transform:', err);
       }
@@ -126,6 +134,8 @@ export const useRectangleInteraction = (
           node.scaleY(1);
           
           try {
+            // Final transform update: RTDB + immediate Firestore sync
+            console.log('🎯 useRectangleInteraction: Transform ended, saving final state to both RTDB and Firestore');
             await updateRect(rectId, {
               x: node.x(),
               y: node.y(),
@@ -134,7 +144,7 @@ export const useRectangleInteraction = (
               rotation: node.rotation(),
               updatedAt: Date.now(),
               updatedBy: currentUserId || 'local-user'
-            });
+            }, true); // isTransformComplete = true
           } catch (err) {
             console.error('Failed to update rectangle transform:', err);
           }
@@ -146,19 +156,45 @@ export const useRectangleInteraction = (
   const deleteSelectedRectangles = useCallback(async () => {
     if (selectionIds.length > 0) {
       try {
+        console.log('🗑️ useRectangleInteraction: Deleting selected rectangles:', selectionIds);
         await deleteRects(selectionIds);
+        console.log('🗑️ useRectangleInteraction: Rectangles deleted, clearing selection');
         clearSelection();
+        
+        // Explicitly update presence to clear selection for all users
+        if (currentUserId) {
+          console.log('🗑️ useRectangleInteraction: Updating presence to clear selection');
+          await updateSelection(currentUserId, []);
+        }
       } catch (err) {
         console.error('Failed to delete rectangles:', err);
       }
     }
-  }, [selectionIds, deleteRects, clearSelection]);
+  }, [selectionIds, deleteRects, clearSelection, currentUserId]);
 
   useEffect(() => {
     if (currentUserId) {
       updateSelection(currentUserId, selectionIds);
     }
   }, [currentUserId, selectionIds]);
+
+  // Clear selection if any selected rectangles are deleted by other users
+  useEffect(() => {
+    if (selectionIds.length > 0) {
+      const existingRectIds = rectangles.map(rect => rect.id);
+      const deletedSelectionIds = selectionIds.filter(id => !existingRectIds.includes(id));
+      
+      if (deletedSelectionIds.length > 0) {
+        console.log('🗑️ useRectangleInteraction: Clearing selection for deleted rectangles:', deletedSelectionIds);
+        clearSelection();
+        
+        // Update presence to clear selection
+        if (currentUserId) {
+          updateSelection(currentUserId, []);
+        }
+      }
+    }
+  }, [rectangles, selectionIds, clearSelection, currentUserId]);
 
   // Handle keyboard events
   useEffect(() => {

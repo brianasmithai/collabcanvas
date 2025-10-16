@@ -1,11 +1,8 @@
-// Hook for managing rectangles with Firestore integration
+// Hook for managing rectangles with hybrid Firestore + RTDB integration
 import { useEffect, useState, useCallback } from 'react';
 import { 
-  subscribeToRectangles, 
-  createRectangle, 
-  updateRectangle, 
-  deleteRectangle, 
-  deleteRectangles 
+  deleteRectangles,
+  hybridRectanglesService
 } from '../services/rectangles';
 import type { Rect } from '../types';
 
@@ -15,13 +12,24 @@ export interface UseRectanglesReturn {
   loading: boolean;
   error: Error | null;
   createRect: (rect: Omit<Rect, 'id'>) => Promise<string>;
-  updateRect: (id: string, updates: Partial<Omit<Rect, 'id'>>) => Promise<void>;
+  updateRect: (id: string, updates: Partial<Omit<Rect, 'id'>>, isTransformComplete?: boolean) => Promise<void>;
   deleteRect: (id: string) => Promise<void>;
   deleteRects: (ids: string[]) => Promise<void>;
+  // Hybrid storage methods
+  validateConsistency: () => Promise<{
+    consistent: boolean;
+    inconsistencies: Array<{
+      id: string;
+      issue: string;
+      firestoreData?: Partial<Rect>;
+      rtdbData?: any;
+    }>;
+  }>;
+  forceSyncAll: () => Promise<void>;
 }
 
 /**
- * Hook to manage rectangles with real-time Firestore synchronization
+ * Hook to manage rectangles with hybrid Firestore + RTDB synchronization
  * @returns Object with rectangles array and CRUD operations
  */
 export const useRectangles = (): UseRectanglesReturn => {
@@ -29,13 +37,13 @@ export const useRectangles = (): UseRectanglesReturn => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
 
-  // Subscribe to rectangles collection
+  // Subscribe to rectangles with hybrid storage (Firestore + RTDB)
   useEffect(() => {
-    console.log('🔗 useRectangles: Setting up Firestore subscription');
+    console.log('🔗 useRectangles: Setting up hybrid subscription (Firestore + RTDB)');
     
-    const unsubscribe = subscribeToRectangles(
+    const unsubscribe = hybridRectanglesService.subscribeToRectanglesHybrid(
       (newRectangles) => {
-        console.log('📦 useRectangles: Received rectangles:', newRectangles.length);
+        console.log('📦 useRectangles: Received rectangles with real-time transforms:', newRectangles.length);
         setRectangles(newRectangles);
         setLoading(false);
         setError(null);
@@ -49,17 +57,18 @@ export const useRectangles = (): UseRectanglesReturn => {
 
     // Cleanup subscription on unmount
     return () => {
-      console.log('🔌 useRectangles: Cleaning up subscription');
+      console.log('🔌 useRectangles: Cleaning up hybrid subscription');
       unsubscribe();
+      hybridRectanglesService.cleanup();
     };
   }, []);
 
-  // Create a new rectangle
+  // Create a new rectangle with hybrid storage
   const createRect = useCallback(async (rect: Omit<Rect, 'id'>): Promise<string> => {
     try {
-      console.log('➕ useRectangles: Creating rectangle:', rect);
-      const id = await createRectangle(rect);
-      console.log('✅ useRectangles: Created rectangle with ID:', id);
+      console.log('➕ useRectangles: Creating rectangle with hybrid storage:', rect);
+      const id = await hybridRectanglesService.createRectangleHybrid(rect);
+      console.log('✅ useRectangles: Created rectangle with hybrid storage, ID:', id);
       return id;
     } catch (err) {
       console.error('❌ useRectangles: Failed to create rectangle:', err);
@@ -67,41 +76,71 @@ export const useRectangles = (): UseRectanglesReturn => {
     }
   }, []);
 
-  // Update an existing rectangle
+  // Update an existing rectangle with hybrid storage
   const updateRect = useCallback(async (
     id: string, 
-    updates: Partial<Omit<Rect, 'id'>>
+    updates: Partial<Omit<Rect, 'id'>>,
+    isTransformComplete: boolean = false
   ): Promise<void> => {
     try {
-      console.log('✏️ useRectangles: Updating rectangle:', id, updates);
-      await updateRectangle(id, updates);
-      console.log('✅ useRectangles: Updated rectangle:', id);
+      console.log('✏️ useRectangles: Updating rectangle with hybrid storage:', id, updates, 'complete:', isTransformComplete);
+      await hybridRectanglesService.updateRectangleHybrid(id, updates, isTransformComplete);
+      console.log('✅ useRectangles: Updated rectangle with hybrid storage:', id);
     } catch (err) {
       console.error('❌ useRectangles: Failed to update rectangle:', err);
       throw err;
     }
   }, []);
 
-  // Delete a single rectangle
+  // Delete a single rectangle with hybrid storage
   const deleteRect = useCallback(async (id: string): Promise<void> => {
     try {
-      console.log('🗑️ useRectangles: Deleting rectangle:', id);
-      await deleteRectangle(id);
-      console.log('✅ useRectangles: Deleted rectangle:', id);
+      console.log('🗑️ useRectangles: Deleting rectangle with hybrid storage:', id);
+      await hybridRectanglesService.deleteRectangleHybrid(id);
+      console.log('✅ useRectangles: Deleted rectangle with hybrid storage:', id);
     } catch (err) {
       console.error('❌ useRectangles: Failed to delete rectangle:', err);
       throw err;
     }
   }, []);
 
-  // Delete multiple rectangles
+  // Delete multiple rectangles with hybrid storage
   const deleteRects = useCallback(async (ids: string[]): Promise<void> => {
     try {
-      console.log('🗑️ useRectangles: Deleting rectangles:', ids);
-      await deleteRectangles(ids);
-      console.log('✅ useRectangles: Deleted rectangles:', ids);
+      console.log('🗑️ useRectangles: Deleting rectangles with hybrid storage:', ids);
+      // Delete from both Firestore and RTDB
+      await Promise.all([
+        deleteRectangles(ids),
+        ...ids.map(id => hybridRectanglesService.deleteRectangleHybrid(id))
+      ]);
+      console.log('✅ useRectangles: Deleted rectangles with hybrid storage:', ids);
     } catch (err) {
       console.error('❌ useRectangles: Failed to delete rectangles:', err);
+      throw err;
+    }
+  }, []);
+
+  // Validate data consistency between RTDB and Firestore
+  const validateConsistency = useCallback(async () => {
+    try {
+      console.log('🔍 useRectangles: Validating data consistency');
+      const result = await hybridRectanglesService.validateDataConsistency();
+      console.log('✅ useRectangles: Data consistency validation complete:', result.consistent);
+      return result;
+    } catch (err) {
+      console.error('❌ useRectangles: Failed to validate consistency:', err);
+      throw err;
+    }
+  }, []);
+
+  // Force sync all transforms to Firestore
+  const forceSyncAll = useCallback(async () => {
+    try {
+      console.log('🔄 useRectangles: Force syncing all transforms to Firestore');
+      await hybridRectanglesService.forceSyncAllTransformsToFirestore();
+      console.log('✅ useRectangles: Force sync complete');
+    } catch (err) {
+      console.error('❌ useRectangles: Failed to force sync:', err);
       throw err;
     }
   }, []);
@@ -114,5 +153,7 @@ export const useRectangles = (): UseRectanglesReturn => {
     updateRect,
     deleteRect,
     deleteRects,
+    validateConsistency,
+    forceSyncAll,
   };
 };

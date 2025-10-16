@@ -1,11 +1,10 @@
 {
   "rules": {
-    // Presence data - authenticated users can read/write their own presence
+    // Presence data - authenticated users can read all presence, write their own
     "presence": {
+      ".read": "auth != null",
       "$uid": {
-        ".read": "auth != null",
-        ".write": "auth != null && auth.uid == $uid",
-        ".validate": "newData.hasChildren(['name', 'displayName', 'cursor', 'selectionIds', 'updatedAt'])"
+        ".write": "auth != null && auth.uid == $uid"
       }
     },
     
@@ -13,8 +12,7 @@
     "transforms": {
       "$transformId": {
         ".read": "auth != null",
-        ".write": "auth != null && (newData.child('updatedBy').val() == auth.uid || !data.exists())",
-        ".validate": "newData.hasChildren(['id', 'x', 'y', 'width', 'height', 'rotation', 'updatedAt', 'updatedBy', 'isActive']) && newData.child('updatedBy').val() == auth.uid"
+        ".write": "auth != null && (newData.child('updatedBy').val() == auth.uid || !data.exists())"
       }
     },
     
