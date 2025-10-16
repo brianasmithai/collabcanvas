@@ -35,6 +35,8 @@ The goal is to implement a dual-storage approach where real-time shape transform
 1.3. The system must synchronize shape rotation changes in real-time during rotate operations
 1.4. The system must handle resize anchor points (which corner/side is being resized)
 1.5. All real-time transformations must be visible to all connected users within 100ms
+1.6. **CRITICAL**: Live transforms must be applied to visual shapes in real-time, not just final states
+1.7. **CRITICAL**: Users must see other users' shapes moving/resizing/rotating as they happen
 
 ### 2. Hybrid Storage Architecture
 2.1. The system must store real-time transformations in Firebase Realtime Database
