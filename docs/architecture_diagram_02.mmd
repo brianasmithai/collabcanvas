@@ -1,0 +1,252 @@
+graph LR
+
+%% ================= FRONTEND APP =================
+subgraph Client_App_React_Vite_TS
+  direction LR
+
+  A[App tsx AuthGate and Canvas]
+  ZS[Zustand uiStore]
+  K[React Konva CanvasStage RectNode Transformer]
+  CU[CursorLayer]
+  PL[PresenceList]
+  TB[TopBar]
+  DP[DebugPanel]
+  IP[InstructionsPanel]
+
+  subgraph Hooks
+    direction TB
+    HR[useRectangles]
+    HP[usePresence]
+    HCI[useCanvasInteraction]
+    HCT[useCursorTracking]
+    HGKS[useGlobalKeyboardShortcuts]
+    HRI[useRectangleInteraction]
+  end
+
+  subgraph Services
+    direction TB
+    SR[rectangles ts]
+    SP[presence ts]
+  end
+
+  subgraph Utils
+    direction TB
+    UTH[throttle ts]
+    UGE[geometry ts]
+    UCO[colors ts]
+  end
+
+  CF[firebaseClient ts]
+
+  A --> K
+  A --> TB
+  A --> PL
+  A --> CU
+  A --> AG
+  A --> ZS
+  A --> DP
+  A --> IP
+
+  AG[AuthGate Email Password]
+
+  K --> ZS
+  ZS --> K
+  K --> HR
+  HR --> K
+  K --> SR
+  SR --> K
+  K --> HCI
+  HCI --> K
+  K --> HCT
+  HCT --> K
+  K --> HRI
+  HRI --> K
+  
+  CU --> HP
+  HP --> CU
+  PL --> HP
+  HP --> PL
+  
+  A --> HGKS
+  HGKS --> DP
+  HGKS --> IP
+
+  HR --> CF
+  HP --> CF
+  SR --> CF
+  SP --> CF
+  
+  HCI --> UGE
+  HCT --> UGE
+  HCT --> UTH
+  HRI --> UGE
+  HRI --> UTH
+  CU --> UCO
+  PL --> UCO
+end
+
+%% ================= BACKEND FIREBASE =================
+subgraph Firebase_Backend
+  direction TB
+  FA[Firebase Auth]
+  FS[Cloud Firestore rectangles]
+  RT[Realtime Database presence + transforms + locks]
+end
+
+%% ================= HOSTING DEPLOY =================
+H[Hosting Vercel]
+
+%% ================= DATA AND AUTH FLOWS =================
+AG --> FA
+FA --> SP
+FA --> FS
+FA --> RT
+
+SP --> RT
+HP --> RT
+RT --> HP
+
+HR --> FS
+FS --> HR
+  HR --> RT
+  RT --> HR
+  HRI --> RT
+  RT --> HRI
+
+K --> ZS
+ZS --> K
+
+Client_App_React_Vite_TS --> FS
+Client_App_React_Vite_TS --> RT
+
+Client_App_React_Vite_TS --> H
+
+%% ================= FILE STRUCTURE KEY PIECES =================
+subgraph Key_Source_Files
+  direction TB
+  F1[src components CanvasStage tsx]
+  F2[src components RectNode tsx]
+  F3[src components CursorLayer tsx]
+  F4[src components PresenceList tsx]
+  F5[src components AuthGate tsx]
+  F6[src components TopBar tsx]
+  F7[src components DebugPanel tsx]
+  F8[src components InstructionsPanel tsx]
+  F9[src hooks useRectangles ts]
+  F10[src hooks usePresence ts]
+  F11[src hooks useCanvasInteraction ts]
+  F12[src hooks useCursorTracking ts]
+  F13[src hooks useGlobalKeyboardShortcuts ts]
+  F14[src hooks useRectangleInteraction ts]
+  F15[src services rectangles ts]
+  F16[src services presence ts]
+  F17[src state uiStore ts]
+  F18[src config firebaseClient ts]
+  F19[src utils throttle ts]
+  F20[src utils geometry ts]
+  F21[src utils colors ts]
+end
+
+K --- F1
+K --- F2
+CU --- F3
+PL --- F4
+AG --- F5
+TB --- F6
+DP --- F7
+IP --- F8
+HR --- F9
+HP --- F10
+HCI --- F11
+HCT --- F12
+HGKS --- F13
+HRI --- F14
+SR --- F15
+SP --- F16
+ZS --- F17
+CF --- F18
+UTH --- F19
+UGE --- F20
+UCO --- F21
+
+%% ================= ARCHITECTURAL CHANGES FROM ORIGINAL =================
+subgraph Key_Changes_From_Original
+  direction TB
+  C1[Added DebugPanel for development]
+  C2[Added InstructionsPanel for UX]
+  C3[Split canvas interactions into specialized hooks]
+  C4[Added cursor tracking with throttling]
+  C5[Added global keyboard shortcuts]
+  C6[Added color utility for user identification]
+  C7[Enhanced rectangle interaction handling]
+  C8[Improved separation of concerns]
+  C9[Hybrid storage: RTDB for real-time + Firestore for persistence]
+  C10[Transform data flows: RTDB during interaction → Firestore on completion]
+end
+
+%% ================= OPTIMAL DATA FLOW STRATEGY =================
+subgraph Optimal_Data_Flow
+  direction TB
+  D1[Real-time Interactions → RTDB]
+  D2[Final States → Firestore]
+  D3[Transform Pipeline: RTDB → Firestore]
+  D4[Presence & Cursors → RTDB]
+  D5[Rectangle Metadata → Firestore]
+  D6[Locks (CAS + TTL) → RTDB]
+end
+
+%% ================= IMPLEMENTATION STATUS =================
+subgraph Implementation_Status
+  direction TB
+  S1[✅ Core MVP Features Complete]
+  S2[✅ Real-time Collaboration Working]
+  S3[✅ Firebase Integration Complete]
+  S4[✅ Canvas Interactions Implemented]
+  S5[✅ Presence & Cursor Tracking Working]
+  S6[✅ Authentication & Authorization]
+  S7[✅ Deployed to Vercel]
+  S8[✅ Comprehensive Test Coverage]
+  S9[⚠️ Performance Optimization Needed]
+  S10[⚠️ Hybrid Storage Strategy Not Implemented]
+end
+
+%% ================= DOMAIN TYPES (ABSTRACTION) =================
+subgraph Domain_Types
+  direction TB
+  T0[ShapeBase (discriminated union)]
+  T1[RectShape extends ShapeBase]
+  T2[EllipseShape extends ShapeBase]
+  T3[TextShape extends ShapeBase]
+  TL[Lock {shapeId, userId, acquiredAt, expiresAt}]
+end
+
+%% ================= LOCK FLOW (SELECTION-FIRST) =================
+subgraph Lock_Flow
+  direction TB
+  L1[Select shape]
+  L2[Attempt lock → RTDB /locks/{shapeId} (CAS + TTL + onDisconnect)]
+  L3[Lock acquired → enable transforms]
+  L4[Broadcast live transforms → RTDB /transforms/{shapeId}]
+  L5[On transform end → persist final state → Firestore /shapes/{id}]
+  L6[Release/expire lock]
+end
+
+K --> L1
+L2 --> RT
+RT --> L3
+K --> L4
+L4 --> RT
+L5 --> FS
+L6 --> RT
+
+%% ================= AI LAYER (FUTURE) =================
+subgraph AI_Layer_Future
+  direction TB
+  AIA[Agent]
+  AIC[Canvas Command API]
+end
+
+AIA --> AIC
+AIC --> K
+AIC --> SR
+AIC --> HR

@@ -1,0 +1,101 @@
+# Rule: PR Clarifying Questions
+
+## Purpose
+
+Ensure the AI assistant asks clarifying questions at the start of each PR to reduce ambiguity and improve implementation quality.
+
+## Rule
+
+**When starting work on a new PR or task list, the AI MUST ask clarifying questions before beginning implementation.**
+
+## When to Apply
+
+- Starting work on any PR from a task list
+- Beginning implementation of a new feature or component
+- When the PRD or task description has potential ambiguities
+- Before writing significant amounts of code
+
+## Clarifying Questions Framework
+
+The AI should ask questions about:
+
+### Technical Decisions
+- **Dependencies**: "Are there specific versions of packages you prefer?"
+- **Architecture**: "Should this follow existing patterns in the codebase?"
+- **Configuration**: "Any specific settings or environment variables needed?"
+
+### Implementation Details
+- **UI/UX**: "Any specific styling or component patterns to follow?"
+- **Error Handling**: "How should errors be handled and displayed?"
+- **Testing**: "What level of test coverage is expected?"
+
+### Integration Points
+- **Existing Code**: "How should this integrate with existing services/components?"
+- **Data Flow**: "Should this use existing stores or create new ones?"
+- **API Design**: "Any specific naming conventions or patterns to follow?"
+
+### Scope Boundaries
+- **Features**: "Should this include [specific feature] or save it for later?"
+- **Edge Cases**: "How should we handle [specific edge case]?"
+- **Performance**: "Any specific performance requirements or constraints?"
+
+## Question Format
+
+```
+🔍 Clarifying Questions for [PR/Task Name]
+
+Before I begin implementation, I'd like to clarify a few things:
+
+1. **[Category]**: [Specific question]
+2. **[Category]**: [Specific question]
+3. **[Category]**: [Specific question]
+
+These answers will help me implement this more accurately and avoid rework.
+```
+
+## Examples
+
+### Good Questions
+- "Should the auth service use Firebase Auth directly or wrap it in a custom service layer?"
+- "What should happen if the user tries to create a shape without being authenticated?"
+- "Should the presence cursor updates be throttled to a specific frequency?"
+
+### Poor Questions
+- "How should I implement this?" (too vague)
+- "What color should the button be?" (too specific, not architectural)
+- "Should I use React?" (already specified in PRD)
+
+## Implementation
+
+1. **Read the PRD/task list** thoroughly
+2. **Identify potential ambiguities** or decision points
+3. **Ask 2-4 focused questions** that will impact implementation
+4. **Wait for user responses** before proceeding
+5. **Acknowledge answers** and proceed with implementation
+
+## Benefits
+
+- **Reduces rework** by clarifying requirements upfront
+- **Improves code quality** by understanding constraints early
+- **Saves time** by avoiding assumptions that prove wrong
+- **Builds confidence** that implementation matches expectations
+
+## Exceptions
+
+**Skip clarifying questions when:**
+- The PRD/task is extremely detailed and unambiguous
+- The implementation is trivial (single file, clear requirements)
+- The user explicitly says "no questions needed" or "proceed as-is"
+
+## Notes
+
+- Questions should be **specific and actionable**
+- Focus on **architectural decisions** rather than minor details
+- **2-4 questions maximum** to avoid overwhelming the user
+- Questions should help **avoid rework** or **clarify scope**
+
+## Integration with Other Rules
+
+- Works alongside `process-task-list` for task management
+- Complements `commit-separation` by ensuring quality before coding
+- Supports `modern-react-nextjs` by clarifying React patterns

@@ -1,0 +1,26 @@
+{
+  "rules": {
+    "presence": {
+      "$uid": {
+        ".read": "auth != null",
+        ".write": "auth != null && auth.uid == $uid",
+        ".validate": "newData.hasChildren(['name', 'cursor', 'updatedAt']) && newData.child('name').isString() && newData.child('cursor').hasChildren(['x', 'y']) && newData.child('cursor').child('x').isNumber() && newData.child('cursor').child('y').isNumber() && newData.child('updatedAt').isNumber()"
+      }
+    },
+    "locks": {
+      "$shapeId": {
+        ".read": "auth != null",
+        ".write": "auth != null",
+        ".validate": "newData.hasChildren(['userId', 'acquiredAt', 'expiresAt']) && newData.child('userId').isString() && newData.child('acquiredAt').isNumber() && newData.child('expiresAt').isNumber()"
+      }
+    },
+    "transforms": {
+      "$shapeId": {
+        ".read": "auth != null",
+        ".write": "auth != null"
+      }
+    },
+    ".read": "auth != null",
+    ".write": "auth != null"
+  }
+}

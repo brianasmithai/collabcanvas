@@ -1,0 +1,36 @@
+// Firestore Security Rules - Minimal scaffold for Auth & Presence
+// These rules enforce least privilege and valid data shapes
+
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Users collection - users can only read/write their own document
+    match /users/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+      
+      // Validate user document structure
+      allow create: if request.auth != null 
+        && request.auth.uid == userId
+        && request.resource.data.keys().hasAll(['displayName', 'createdAt'])
+        && request.resource.data.displayName is string
+        && request.resource.data.createdAt is number;
+        
+      allow update: if request.auth != null 
+        && request.auth.uid == userId
+        && request.resource.data.keys().hasAll(['displayName', 'createdAt'])
+        && request.resource.data.displayName is string
+        && request.resource.data.createdAt is number;
+    }
+    
+    // Shapes collection - authenticated users can read/write
+    // TODO: Add shape-specific validation in later PRs
+    match /shapes/{shapeId} {
+      allow read, write: if request.auth != null;
+    }
+    
+    // Deny all other access
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

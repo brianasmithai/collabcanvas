@@ -1,0 +1,76 @@
+---
+description: Enforce separation of development edits and git operations
+globs: **/*
+---
+
+# Rule: Commit Separation
+
+## Purpose
+
+Separate development work from version control operations to ensure quality and intentionality in commits.
+
+## Rule
+
+**NEVER perform git commits in the same response where actual development work (coding, file modifications, debugging) is being done.**
+
+## Workflow Pattern
+
+1. **Development Response**: Code changes, debugging, testing, file modifications
+2. **Separate Response**: Git operations (staging, committing, pushing) only after explicit user request
+
+## Examples
+
+### ❌ **Incorrect - Work + Commit in Same Response:**
+```
+1. Fix bug in rectangles.ts
+2. Update tests
+3. Run tests to verify
+4. git add . && git commit -m "fix: rectangle bug"
+```
+
+### ✅ **Correct - Separate Responses:**
+**Response 1 - Development Work:**
+```
+1. Fix bug in rectangles.ts  
+2. Update tests
+3. Run tests to verify
+4. [Stop here - no git operations]
+```
+
+**Response 2 - Version Control (after user approval):**
+```
+User: "Tests pass, ready to commit"
+1. git add .
+2. git commit -m "fix: rectangle bug"
+```
+
+## Rationale
+
+- **Testing First**: Always verify changes work before committing
+- **Intentional Commits**: User should explicitly decide when to commit
+- **Quality Control**: Prevents committing broken or untested code
+- **Workflow Clarity**: Separates "doing work" from "saving work"
+- **Rollback Safety**: User can test and discard changes if needed
+
+## Exceptions
+
+**Never commit without explicit user permission**, even for:
+- Small fixes
+- "Obviously working" changes  
+- Test-only modifications
+- Documentation updates
+
+## Implementation
+
+1. **End development responses** with status like: "Ready for testing" or "Changes complete - test before committing"
+2. **Wait for user feedback** before any git operations
+3. **Only commit** when user explicitly requests it
+4. **Always ask** if unsure whether user wants to commit
+
+## Benefits
+
+- Prevents accidental commits of broken code
+- Encourages proper testing workflow
+- Maintains clean git history
+- Respects user's development process
+- Allows for iterative debugging without git overhead

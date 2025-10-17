@@ -1,0 +1,175 @@
+---
+description: Guidelines for managing task lists in markdown files to track progress on completing a PRD
+globs: docs/tasks-*.md, docs/**/tasks-*.md
+---
+
+# Task List Management
+
+// Description: Guidelines for managing task lists in markdown files to track progress on completing a PRD
+// Recommended Globs: docs/tasks-*.md, docs/**/tasks-*.md
+
+Guidelines for managing task lists in markdown files to track progress on completing a PRD
+
+## Task Implementation
+- **One sub-task at a time:** Do **NOT** start the next sub‑task until you ask the user for permission and they say "yes" or "y"
+- **Completion protocol:**
+  1. When you finish a **sub‑task**, immediately mark it as completed by changing `[ ]` to `[x]`.
+  2. If **all** subtasks underneath a parent task are now `[x]`, also mark the **parent task** as completed.
+- Stop after each sub‑task and wait for the user's go‑ahead.
+
+## Task List Maintenance
+
+1. **Update the task list as you work:**
+   - Mark tasks and subtasks as completed (`[x]`) per the protocol above.
+   - Add new tasks as they emerge.
+
+2. **Maintain the "Relevant Files" section:**
+   - List every file created or modified.
+   - Give each file a one‑line description of its purpose.
+
+## AI Instructions
+
+When working with task lists, the AI must:
+
+1. Regularly update the task list file after finishing any significant work.
+2. Follow the completion protocol:
+   - Mark each finished **sub‑task** `[x]`.
+   - Mark the **parent task** `[x]` once **all** its subtasks are `[x]`.
+3. Add newly discovered tasks.
+4. Keep "Relevant Files" accurate and up to date.
+5. Before starting work, check which sub‑task is next.
+6. After implementing a sub‑task, update the file and then pause for user approval.
+
+## Testing & Validation Reminders
+
+After completing each sub-task, the AI must remind the user about testing opportunities:
+
+### **Web App Refresh/Testing**
+- **When to suggest:** After any task that affects the running application (new components, services, or configuration changes)
+- **Reminder format:** "🔄 **Testing Opportunity:** You can refresh your web app to see the changes. Run `npm run dev` if the dev server has stopped."
+- **When to skip:** For pure configuration files, types, or utilities that don't affect the UI
+- **Important:** NEVER automatically run `npm run dev` - always recommend it to the user to avoid multiple localhost instances
+
+### **User Testing Suggestions**
+- **When to suggest:** After completing features that have user-facing functionality
+- **Reminder format:** "🧪 **User Testing:** You might want to test [specific functionality] to verify it works as expected."
+- **Examples:** 
+  - After auth components: "test the login/signup flow"
+  - After presence features: "test cursor updates in multiple browser tabs"
+  - After canvas features: "test pan/zoom functionality"
+
+### **Build/Compile Testing**
+- **When to suggest:** After adding new dependencies or significant configuration changes
+- **Reminder format:** "🔨 **Build Check:** Run `npm run build` to verify everything compiles correctly."
+- **When to suggest:** After package.json changes, TypeScript config changes, or new major dependencies
+
+### **Implementation Notes**
+- Include these reminders in the completion summary for each sub-task
+- Keep reminders brief and actionable
+- Focus on the most relevant testing for the specific changes made
+- Don't overwhelm with too many testing suggestions at once
+
+## Task List Completion Protocol
+
+When a task list (PR) is completed, the AI must perform a comprehensive review and update:
+
+### **1. Progress File Update**
+- Move all "Known Issues & Future Improvements" from the completed task list to `docs/progress.md`
+- Add a summary of work completed in the PR to `docs/progress.md`
+- Include key files created, tests added, and major accomplishments
+
+### **2. Sub-PRD Update**
+- Review the sub-PRD that generated this task list
+- Update the sub-PRD to reflect any changes, clarifications, or new insights gained during implementation
+- Mark any completed sections or add notes about implementation decisions
+
+### **3. Task List Review & Validation**
+Before marking a PR complete, the AI must review and identify:
+
+#### **Missing Work Analysis**
+- **Scope gaps**: Are there tasks that should have been included but weren't?
+- **Dependencies**: Are there missing setup tasks that will block future PRs?
+- **Integration points**: Are there missing integration or configuration tasks?
+
+#### **Ambiguity Identification**
+- **Unclear requirements**: Were there any requirements that were ambiguous during implementation?
+- **Technical decisions**: Were there technical choices that need documentation or justification?
+- **Future blockers**: Are there decisions made that might cause problems in later PRs?
+
+#### **Quality Assurance**
+- **Test coverage**: Is the test coverage appropriate for the work done?
+- **Documentation**: Are there any implementation details that need better documentation?
+- **Error handling**: Are there error cases that weren't addressed?
+
+### **4. Completion Report**
+After the review, provide a summary including:
+- **Work completed**: What was accomplished
+- **Issues identified**: Any problems or gaps found
+- **Recommendations**: Suggestions for future PRs or improvements
+- **Dependencies**: What the next PR will need from this one
+
+### **5. File Updates**
+- Update `docs/progress.md` with completion summary and moved issues
+- Update the relevant sub-PRD with implementation insights
+- **Update README.md** with any new environment variables, setup instructions, or configuration changes introduced in the PR
+- Mark the task list as complete with any final notes
+
+### **6. Git Workflow Protocol**
+After completing the summary and review, follow this git workflow:
+
+#### **Feature Branch Creation (Start of New PR)**
+When beginning a new pull request task list:
+1. **Create feature branch**: `git checkout -b feature/[pr-name]` (e.g., `feature/auth-presence-pr-1`)
+2. **Verify branch**: Confirm you're on the new feature branch with `git branch`
+3. **Note**: All work for this PR will be done on this feature branch
+
+#### **Feature Branch Commit (End of PR)**
+After completing the summary and review:
+1. **Ask for approval**: "Ready to commit all changes to the feature branch. Proceed?"
+2. **Stage and commit**: `git add . && git commit -m "feat: [descriptive commit message]"`
+3. **Verify commit**: Confirm the commit was successful
+
+#### **Merge to Develop Branch**
+After committing to feature branch:
+1. **Ask for permission**: "Ready to merge feature branch to local develop branch. Proceed?"
+2. **Switch to develop**: `git checkout develop`
+3. **Merge feature branch**: `git merge feature/[pr-name]`
+4. **Clean up**: `git branch -d feature/[pr-name]` (delete feature branch)
+
+#### **Push to Remote Develop**
+After merging to local develop:
+1. **Ask for permission**: "Ready to push to remote develop branch. Proceed?"
+2. **Push if approved**: `git push origin develop`
+3. **Note**: User may choose not to push after every commit
+
+#### **Merge to Main (Optional)**
+After pushing to remote develop:
+1. **Provide advice**: Assess if changes are ready for main branch
+2. **Ask for permission**: "Should we also merge to origin/main? [reasoning]"
+3. **Merge if approved**: 
+   - `git checkout main`
+   - `git pull origin main`
+   - `git merge develop`
+   - `git push origin main`
+
+## Question-Asking Protocol
+
+When beginning work on any task, the AI must:
+
+1. **Ask clarifying questions** if requirements are ambiguous or unclear
+2. **Not required** to ask questions if the task is straightforward and well-defined
+3. **Always ask** if there are multiple valid approaches and the choice affects future work
+4. **Document decisions** made during implementation for future reference
+
+### **When to Ask Questions**
+- **Ambiguous requirements**: Multiple interpretations possible
+- **Technical choices**: Different approaches with different trade-offs
+- **Configuration decisions**: Settings that affect deployment or development
+- **Scope boundaries**: Unclear what should/shouldn't be included
+- **Integration points**: How this work connects to existing or future features
+
+### **When NOT to Ask Questions**
+- **Clear, specific tasks**: Well-defined implementation steps
+- **Standard patterns**: Following established conventions in the codebase
+- **Obvious choices**: Single clear approach with no alternatives
+- **Minor details**: Implementation specifics that don't affect architecture

@@ -1,0 +1,62 @@
+---
+description: Always append a brief Yoda-style quote at the end of assistant responses
+globs: **/*
+---
+
+# Yoda-Style Quote Endings
+
+## Rule Description
+At the end of every Cursor AI chat, include a wise and inspirational quote in Yoda's style.
+
+## CRITICAL: Inverted Speech Pattern Required
+**MANDATORY**: Use Yoda's distinctive inverted sentence structure:
+- Put the verb/action at the END of the sentence
+- Start with the object or subject first
+- Use Yoda's characteristic phrases: "you must," "there is no," "strong with the Force you are"
+
+## Format
+- Add a line break after the last technical response
+- Start with '---'
+- Add '➡️ ' before the quote
+- **INVERT THE SENTENCE STRUCTURE** (this is the key!)
+- Keep it short and meaningful
+
+### Conditional Footer (Rules Applied + Model Info)
+- Immediately after the Yoda quote, add two lines:
+  1. `Rules applied: [rule-name-1], [rule-name-2]` (if any rules influenced the response, otherwise omit)
+  2. `Model: [model-name]` (always include the model used for this response)
+- If no rules were applied, only show the model line.
+
+## Examples of CORRECT Inverted Structure
+```
+---
+➡️ Code well you must, for in the details, greatness lies.
+```
+
+```
+---
+➡️ Debug or debug not. There is no try-catch.
+```
+
+```
+---
+➡️ Strong with the code you are becoming.
+```
+
+## Examples of WRONG (Normal Structure)
+❌ "You must code well, for greatness lies in the details."
+❌ "You are becoming strong with the code."
+❌ "Share the foundation you have built."
+
+## Guidelines
+- **INVERT EVERY SENTENCE** - this is the core of Yoda's speech
+- Keep quotes programming or learning related
+- Focus on wisdom and encouragement
+- Keep it light and fun
+- Always include the '➡️ ' emoji prefix
+
+## Purpose
+- Add personality to coding sessions
+- Provide encouragement during challenging tasks
+- Make debugging more enjoyable
+- Test rule installation functionality

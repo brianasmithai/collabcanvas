@@ -1,0 +1,103 @@
+---
+description: Standardized commit message format for consistent version control history
+globs: **/*.{js,jsx,ts,tsx,md,mdx}
+---
+
+## Commit Messages
+
+// Description: Standardized commit message format for consistent version control history
+// Recommended Globs: **/*.{js,jsx,ts,tsx,md,mdx}
+
+## Format
+Always prefix commit messages in the following format:
+
+```
+# Separate commands
+git add <changed_files>
+git commit -m "Type(scope): description"
+
+# Combined command (shorthand)
+git add . && git commit -m "Type(scope): description"
+```
+
+## Types
+- `Feat`: New feature or enhancement
+- `Fix`: Bug fix
+- `Docs`: Documentation changes
+- `Style`: Code style/formatting changes
+- `Refactor`: Code refactoring
+- `Test`: Adding or updating tests
+- `Chore`: Maintenance tasks, dependencies, etc.
+
+## Examples
+```bash
+# Single file
+git add src/components/Button.tsx
+git commit -m "Feat(component): add new Button component"
+
+# Multiple files
+git add src/api/auth.ts src/hooks/useAuth.ts
+git commit -m "Fix(auth): resolve login session issues"
+
+# All changes
+git add .
+git commit -m "Style(css): update global theme colors"
+```
+
+## Guidelines
+- Use imperative mood in descriptions ("add", not "added")
+- Keep descriptions concise but meaningful
+- Always include both type and scope
+- Use lowercase for descriptions
+- No period at the end of the message
+
+## PR-Level Commits (Multi-Task Commits)
+For commits that represent completion of a pull request or multiple related tasks:
+- **Use verbose, detailed commit messages** with bullet points
+- **Include key deliverables** and major components created
+- **Specify testing status** (e.g., "Tests: 30/30 passing")
+- **Note dependencies** and what this enables for future work
+- **Provide context** for future developers and code reviewers
+
+### PR Commit Message Format
+```
+Type(scope): brief summary of PR completion
+
+- Detailed bullet point of major deliverable 1
+- Detailed bullet point of major deliverable 2
+- Detailed bullet point of major deliverable 3
+- Add testing status and coverage information
+- Note what this enables for future development
+
+Enables: [What this work unblocks for future PRs]
+Tests: [Test status and coverage]
+```
+
+### Example PR Commit
+```
+feat(auth-presence): implement foundation infrastructure for PR1
+
+- Initialize Firebase clients (Auth, Firestore, RTDB) with proper singleton pattern
+- Create comprehensive type system for auth and presence with runtime guards
+- Set up Vitest testing framework with 30 passing tests
+- Add environment configuration with typed Firebase config loader
+- Implement security rules scaffolding for Firestore and RTDB
+- Add logger utility with environment-aware diagnostics
+- Update README with complete environment variable documentation
+- Enhance process rules with git workflow and question-asking protocols
+
+Enables: Authentication flows, presence tracking, and downstream canvas features
+Tests: 30/30 passing (firebase-init, presence-types)
+```
+
+## Common Patterns
+- Documentation: `Docs(readme): update installation steps`
+- Dependencies: `Chore(deps): update package versions`
+- Bug fixes: `Fix(api): resolve undefined user error`
+- New features: `Feat(auth): add Google OAuth login`
+
+Don't forget to commit! Here's a template:
+```bash
+git add .
+git commit -m "Type(scope): description"
+```

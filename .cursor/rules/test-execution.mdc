@@ -1,0 +1,51 @@
+---
+description: Ensure non-interactive test runs by appending --run to test commands
+globs: **/*
+---
+
+# Rule: Test Execution
+
+## Purpose
+
+Ensure proper test execution without hanging on user input.
+
+## Rule
+
+When running tests with npm test or vitest, ALWAYS append `--run` to the command to prevent the test runner from hanging in watch mode waiting for user input.
+
+## Examples
+
+✅ **Correct:**
+```bash
+npm test -- tests/rectangles.service.test.ts --run
+npm test -- --run
+vitest --run
+```
+
+❌ **Incorrect:**
+```bash
+npm test -- tests/rectangles.service.test.ts
+npm test
+vitest
+```
+
+## Rationale
+
+- Test runners like Vitest default to watch mode
+- Watch mode waits for user input (file changes, keyboard commands)
+- This causes the AI assistant to hang indefinitely
+- Using `--run` executes tests once and exits cleanly
+- Essential for automated testing in AI-assisted development
+
+## When to Use
+
+- Any test execution during development
+- Running specific test files
+- Running all tests
+- CI/CD scenarios (though CI typically handles this automatically)
+
+## Additional Notes
+
+- Some test runners use different flags (`--run`, `--no-watch`, `--ci`)
+- For Vitest specifically, `--run` is the correct flag
+- Always verify the correct flag for the test runner being used
