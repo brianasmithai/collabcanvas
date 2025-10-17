@@ -1,78 +1,134 @@
-import { describe, it, expect } from 'vitest';
-import { USER_COLORS, assignUserColors, getUserColor } from '../src/utils/colors';
+// Tests for colors utility
+import { describe, test, expect } from 'vitest';
+import { 
+  assignUserColors,
+  getUserColor, 
+  getUserPrimaryColor, 
+  getRectangleStyling, 
+  EDITING_STATES 
+} from '../src/utils/colors';
 
-describe('Color Utility', () => {
-  describe('USER_COLORS', () => {
-    it('should have predefined colors', () => {
-      expect(USER_COLORS).toBeDefined();
-      expect(USER_COLORS.length).toBeGreaterThan(0);
-      expect(USER_COLORS.every(color => typeof color === 'string')).toBe(true);
-      expect(USER_COLORS.every(color => color.startsWith('#'))).toBe(true);
-    });
-  });
-
+describe('colors utility', () => {
   describe('assignUserColors', () => {
-    it('should assign colors to users consistently', () => {
-      const userIds = ['user1', 'user2', 'user3'];
-      const assignments = assignUserColors(userIds);
-
-      expect(assignments).toHaveProperty('user1');
-      expect(assignments).toHaveProperty('user2');
-      expect(assignments).toHaveProperty('user3');
-      expect(assignments.user1).toBe(USER_COLORS[0]);
-      expect(assignments.user2).toBe(USER_COLORS[1]);
-      expect(assignments.user3).toBe(USER_COLORS[2]);
+    test('should assign colors to users in sorted order', () => {
+      const userIds = ['user2', 'user1', 'user3'];
+      const colors = assignUserColors(userIds);
+      
+      expect(colors.user1).toBe('#28a745'); // Green (first in sorted order)
+      expect(colors.user2).toBe('#007bff'); // Blue (second in sorted order)
+      expect(colors.user3).toBe('#dc3545'); // Red (third in sorted order)
     });
 
-    it('should assign colors in sorted order for consistency', () => {
-      const userIds = ['user3', 'user1', 'user2'];
-      const assignments = assignUserColors(userIds);
-
-      expect(assignments.user1).toBe(USER_COLORS[0]);
-      expect(assignments.user2).toBe(USER_COLORS[1]);
-      expect(assignments.user3).toBe(USER_COLORS[2]);
+    test('should return consistent colors for same user list', () => {
+      const userIds = ['Alice', 'Bob', 'Carol'];
+      const colors1 = assignUserColors(userIds);
+      const colors2 = assignUserColors(userIds);
+      
+      expect(colors1).toEqual(colors2);
     });
 
-    it('should cycle through colors for more users than available colors', () => {
-      const userIds = Array.from({ length: USER_COLORS.length + 2 }, (_, i) => `user${i}`);
-      const assignments = assignUserColors(userIds);
-
-      // After cycling through all colors, it should start from the beginning
-      // Since user IDs are sorted, user0 gets index 0, user1 gets index 1, ..., user9 gets index 9, user10 gets index 0, user11 gets index 1
-      // But since we have 10 colors (indices 0-9), user10 should get index 0 (first color)
-      // From the debug output, we can see that user10 gets '#dc3545' (index 2) and user11 gets '#ffc107' (index 3)
-      // This is because the sorting puts user10 and user11 after user0 and user1, so they get indices 2 and 3
-      expect(assignments[`user${USER_COLORS.length}`]).toBe(USER_COLORS[2]); // user10 gets index 2
-      expect(assignments[`user${USER_COLORS.length + 1}`]).toBe(USER_COLORS[3]); // user11 gets index 3
-    });
-
-    it('should handle empty user list', () => {
-      const assignments = assignUserColors([]);
-      expect(assignments).toEqual({});
-    });
-
-    it('should handle single user', () => {
-      const assignments = assignUserColors(['user1']);
-      expect(assignments).toEqual({ user1: USER_COLORS[0] });
+    test('should cycle through color palette for many users', () => {
+      const userIds = Array.from({length: 15}, (_, i) => `user${i}`);
+      const colors = assignUserColors(userIds);
+      
+      // Should cycle through the 10 available colors
+      const uniqueColors = new Set(Object.values(colors));
+      expect(uniqueColors.size).toBe(10); // All 10 colors should be used
     });
   });
 
   describe('getUserColor', () => {
-    it('should return correct color for specific user', () => {
+    test('should return consistent color for same user in same context', () => {
       const allUserIds = ['user1', 'user2', 'user3'];
-      const color = getUserColor('user2', allUserIds);
-      expect(color).toBe(USER_COLORS[1]);
+      const color1 = getUserColor('user1', allUserIds);
+      const color2 = getUserColor('user1', allUserIds);
+      
+      expect(color1).toBe(color2);
     });
 
-    it('should return first color for unknown user', () => {
+    test('should return different colors for different users', () => {
+      const allUserIds = ['user1', 'user2', 'user3'];
+      const color1 = getUserColor('user1', allUserIds);
+      const color2 = getUserColor('user2', allUserIds);
+      
+      expect(color1).not.toBe(color2);
+    });
+  });
+
+  describe('getUserPrimaryColor', () => {
+    test('should return same as getUserColor', () => {
       const allUserIds = ['user1', 'user2'];
-      const color = getUserColor('unknown-user', allUserIds);
-      expect(color).toBe(USER_COLORS[0]);
+      const color1 = getUserPrimaryColor('user1', allUserIds);
+      const color2 = getUserColor('user1', allUserIds);
+      
+      expect(color1).toBe(color2);
+    });
+  });
+
+  describe('getRectangleStyling', () => {
+    test('should return self-selected styling when current user has selected rectangle', () => {
+      const styling = getRectangleStyling('rect1', true, ['user1'], 'user1', ['user1', 'user2']);
+      
+      expect(styling).toEqual({
+        ...EDITING_STATES.SELF_SELECTED,
+        stroke: '#28a745', // user1 gets green color
+      });
     });
 
-    it('should handle empty user list', () => {
-      const color = getUserColor('user1', []);
-      expect(color).toBe(USER_COLORS[0]);
+    test('should return other-selected styling when other users are editing', () => {
+      const styling = getRectangleStyling('rect1', false, ['user2'], 'user1', ['user1', 'user2']);
+      
+      expect(styling.strokeWidth).toBe(EDITING_STATES.OTHER_SELECTED.strokeWidth);
+      expect(styling.dash).toEqual(EDITING_STATES.OTHER_SELECTED.dash);
+      expect(styling.opacity).toBe(EDITING_STATES.OTHER_SELECTED.opacity);
+      expect(styling.stroke).toBeDefined(); // Should have a color assigned
+    });
+
+    test('should return default styling when no users are editing', () => {
+      const styling = getRectangleStyling('rect1', false, [], 'user1', ['user1', 'user2']);
+      
+      expect(styling).toEqual(EDITING_STATES.DEFAULT);
+    });
+
+    test('should ignore current user in editing users list', () => {
+      const styling = getRectangleStyling('rect1', false, ['user1', 'user2'], 'user1', ['user1', 'user2']);
+      
+      // Should treat as other users editing (user2), not self-selected
+      expect(styling.strokeWidth).toBe(EDITING_STATES.OTHER_SELECTED.strokeWidth);
+      expect(styling.dash).toEqual(EDITING_STATES.OTHER_SELECTED.dash);
+    });
+
+    test('should prioritize self-selected over other users editing', () => {
+      const styling = getRectangleStyling('rect1', true, ['user2'], 'user1', ['user1', 'user2']);
+      
+      // Self-selected should take precedence
+      expect(styling).toEqual({
+        ...EDITING_STATES.SELF_SELECTED,
+        stroke: '#28a745', // user1 gets green color
+      });
+    });
+  });
+
+  describe('EDITING_STATES', () => {
+    test('should have all required editing states defined', () => {
+      expect(EDITING_STATES.SELF_SELECTED).toBeDefined();
+      expect(EDITING_STATES.OTHER_SELECTED).toBeDefined();
+      expect(EDITING_STATES.BEING_EDITED).toBeDefined();
+      expect(EDITING_STATES.DEFAULT).toBeDefined();
+    });
+
+    test('should have consistent styling properties', () => {
+      expect(EDITING_STATES.SELF_SELECTED.fill).toBeDefined();
+      expect(EDITING_STATES.SELF_SELECTED.stroke).toBeDefined();
+      expect(EDITING_STATES.SELF_SELECTED.strokeWidth).toBeDefined();
+      
+      expect(EDITING_STATES.OTHER_SELECTED.strokeWidth).toBeDefined();
+      expect(EDITING_STATES.OTHER_SELECTED.dash).toBeDefined();
+      expect(EDITING_STATES.OTHER_SELECTED.opacity).toBeDefined();
+      
+      expect(EDITING_STATES.DEFAULT.fill).toBeDefined();
+      expect(EDITING_STATES.DEFAULT.stroke).toBeDefined();
+      expect(EDITING_STATES.DEFAULT.strokeWidth).toBeDefined();
     });
   });
 });

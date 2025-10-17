@@ -25,9 +25,9 @@ export const CursorLayer: React.FC<CursorLayerProps> = ({ currentUserId }) => {
     return null;
   }
 
-  // Assign colors to all remote users to avoid conflicts
-  const userIds = remoteUsers.map(([uid]) => uid);
-  const colorAssignments = assignUserColors(userIds);
+  // Get color assignments for all users (including current user for consistent color assignment)
+  const allUserIds = Object.keys(presenceMap);
+  const colorAssignments = assignUserColors(allUserIds);
 
   return (
     <Layer>

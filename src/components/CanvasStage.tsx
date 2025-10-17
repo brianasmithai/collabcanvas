@@ -8,6 +8,7 @@ import { useRectangles } from '../hooks/useRectangles';
 import { useCanvasInteraction } from '../hooks/useCanvasInteraction';
 import { useCursorTracking } from '../hooks/useCursorTracking';
 import { useRectangleInteraction } from '../hooks/useRectangleInteraction';
+import { usePresence } from '../hooks/usePresence';
 
 interface CanvasStageProps {
   width: number;
@@ -22,6 +23,27 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
   
   const { viewport, selectionIds } = useUIStore();
   const { rectangles, loading, error } = useRectangles();
+  const presenceMap = usePresence();
+
+  // Helper function to get users editing a specific rectangle
+  const getEditingUsers = (rectId: string): string[] => {
+    const editingUsers: string[] = [];
+    
+    Object.entries(presenceMap).forEach(([userId, presence]) => {
+      // Skip current user
+      if (userId === currentUserId) return;
+      
+      // Check if this user has selected this rectangle
+      if (presence.selectionIds && presence.selectionIds.includes(rectId)) {
+        editingUsers.push(userId);
+      }
+    });
+    
+    return editingUsers;
+  };
+
+  // Get all user IDs for color assignment
+  const allUserIds = Object.keys(presenceMap);
 
   const { isDragging, handleWheel, handleMouseDown, handleDragEnd, handleMouseUp } = useCanvasInteraction(stageRef);
   const { handleMouseMove, handleMouseLeave } = useCursorTracking(stageRef, isDragging, currentUserId);
@@ -86,19 +108,25 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
           />
         )}
         
-        {rectangles.map((rect) => (
-          <RectNode
-            key={rect.id}
-            ref={(ref) => {
-              if (ref) rectRefs.current[rect.id] = ref;
-            }}
-            rect={rect}
-            isSelected={selectionIds.includes(rect.id)}
-            onClick={handleRectClick}
-            onDragMove={handleRectDragMove}
-            onDragEnd={handleRectDragEnd}
-          />
-        ))}
+        {rectangles.map((rect) => {
+          const editingUsers = getEditingUsers(rect.id);
+          return (
+            <RectNode
+              key={rect.id}
+              ref={(ref) => {
+                if (ref) rectRefs.current[rect.id] = ref;
+              }}
+              rect={rect}
+              isSelected={selectionIds.includes(rect.id)}
+              onClick={handleRectClick}
+              onDragMove={handleRectDragMove}
+              onDragEnd={handleRectDragEnd}
+              editingUsers={editingUsers}
+              currentUserId={currentUserId}
+              allUserIds={allUserIds}
+            />
+          );
+        })}
         
         {selectionIds.length > 0 && (
           <Transformer

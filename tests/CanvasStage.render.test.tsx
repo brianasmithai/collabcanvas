@@ -26,6 +26,21 @@ vi.mock('react-konva', () => ({
       {children}
     </div>
   ),
+  Group: ({ children, ...props }: any) => (
+    <div data-testid="konva-group" {...props}>
+      {children}
+    </div>
+  ),
+  Circle: ({ children, ...props }: any) => (
+    <div data-testid="konva-circle" {...props}>
+      {children}
+    </div>
+  ),
+  Text: ({ children, ...props }: any) => (
+    <div data-testid="konva-text" {...props}>
+      {children}
+    </div>
+  ),
 }));
 
 // Mock the RectNode component to avoid Konva node method calls
@@ -83,14 +98,34 @@ vi.mock('../src/hooks/useRectangles', () => ({
   }),
 }));
 
+// Mock the usePresence hook to return presence data
+vi.mock('../src/hooks/usePresence', () => ({
+  usePresence: () => ({
+    'user1': {
+      name: 'Alice',
+      displayName: 'Alice',
+      cursor: { x: 150, y: 150 },
+      selectionIds: ['rect1'],
+      updatedAt: Date.now(),
+    },
+    'user2': {
+      name: 'Bob',
+      displayName: 'Bob',
+      cursor: { x: 300, y: 200 },
+      selectionIds: [],
+      updatedAt: Date.now(),
+    },
+  }),
+}));
+
 describe('CanvasStage', () => {
   test('should render without errors', () => {
-    const { getByTestId } = render(
+    const { getByTestId, getAllByTestId } = render(
       <CanvasStage width={800} height={600} />
     );
     
     expect(getByTestId('konva-stage')).toBeInTheDocument();
-    expect(getByTestId('konva-layer')).toBeInTheDocument();
+    expect(getAllByTestId('konva-layer')).toHaveLength(2); // Main layer + cursor layer
   });
 
   test('should pass width and height props', () => {
@@ -110,5 +145,27 @@ describe('CanvasStage', () => {
     
     const stage = getByTestId('konva-stage');
     expect(stage).toHaveAttribute('draggable', 'true');
+  });
+
+  test('should pass editing users to RectNode when other users have selected rectangles', () => {
+    const { getByTestId } = render(
+      <CanvasStage width={800} height={600} currentUserId="user2" />
+    );
+    
+    // The RectNode should receive editingUsers prop with user1 (who has rect1 selected)
+    const rectNode = getByTestId('rect-node');
+    expect(rectNode).toBeInTheDocument();
+    expect(rectNode).toHaveAttribute('data-rect-id', 'rect1');
+  });
+
+  test('should not pass editing users when current user has selected the rectangle', () => {
+    const { getByTestId } = render(
+      <CanvasStage width={800} height={600} currentUserId="user1" />
+    );
+    
+    // The RectNode should not receive editingUsers since user1 (current user) has it selected
+    const rectNode = getByTestId('rect-node');
+    expect(rectNode).toBeInTheDocument();
+    expect(rectNode).toHaveAttribute('data-rect-id', 'rect1');
   });
 });

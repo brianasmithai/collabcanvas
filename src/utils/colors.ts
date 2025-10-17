@@ -44,3 +44,86 @@ export const getUserColor = (userId: string, allUserIds: string[]): string => {
   const colorAssignments = assignUserColors(allUserIds);
   return colorAssignments[userId] || USER_COLORS[0]; // Fallback to first color
 };
+
+/**
+ * Get the primary color for a user (for backward compatibility)
+ * @param userId - The user ID
+ * @param allUserIds - All user IDs to ensure consistent assignment
+ * @returns Primary color string
+ */
+export const getUserPrimaryColor = (userId: string, allUserIds: string[]): string => {
+  return getUserColor(userId, allUserIds);
+};
+
+/**
+ * Get visual feedback colors for different editing states
+ */
+export const EDITING_STATES = {
+  // Current user's selection
+  SELF_SELECTED: {
+    fill: '#e3f2fd',
+    stroke: '#1976d2',
+    strokeWidth: 3,
+  },
+  
+  // Other user's selection
+  OTHER_SELECTED: {
+    strokeWidth: 2,
+    dash: [8, 4],
+    opacity: 0.8,
+  },
+  
+  // Object being actively edited (dragged/resized/rotated)
+  BEING_EDITED: {
+    strokeWidth: 3,
+    dash: [4, 4],
+    opacity: 0.9,
+  },
+  
+  // Default state
+  DEFAULT: {
+    fill: '#bbdefb',
+    stroke: '#2196f3',
+    strokeWidth: 2,
+  },
+} as const;
+
+/**
+ * Get visual styling for a rectangle based on editing state
+ * @param rectId - The rectangle ID
+ * @param isSelected - Whether the current user has selected this rectangle
+ * @param editingUsers - Array of user IDs currently editing this rectangle
+ * @param currentUserId - The current user's ID
+ * @param allUserIds - All user IDs for color assignment
+ * @returns Styling object for the rectangle
+ */
+export const getRectangleStyling = (
+  rectId: string,
+  isSelected: boolean,
+  editingUsers: string[],
+  currentUserId?: string,
+  allUserIds?: string[]
+) => {
+  // If current user has selected it
+  if (isSelected && currentUserId && allUserIds) {
+    return {
+      ...EDITING_STATES.SELF_SELECTED,
+      stroke: getUserColor(currentUserId, allUserIds), // Use current user's color
+    };
+  }
+  
+  // If other users are editing it
+  if (editingUsers.length > 0) {
+    const otherUsers = editingUsers.filter(uid => uid !== currentUserId);
+    if (otherUsers.length > 0 && allUserIds) {
+      const userColor = getUserColor(otherUsers[0], allUserIds);
+      return {
+        ...EDITING_STATES.OTHER_SELECTED,
+        stroke: userColor, // Use first other user's color
+      };
+    }
+  }
+  
+  // Default styling
+  return EDITING_STATES.DEFAULT;
+};

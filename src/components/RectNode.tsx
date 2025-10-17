@@ -2,6 +2,7 @@
 import { forwardRef, useRef } from 'react';
 import { Rect as KonvaRect } from 'react-konva';
 import { throttle } from '../utils/throttle';
+import { getRectangleStyling } from '../utils/colors';
 import type { Rect } from '../types';
 
 interface RectNodeProps {
@@ -10,9 +11,21 @@ interface RectNodeProps {
   onClick: (id: string) => void;
   onDragMove: (id: string, x: number, y: number) => void;
   onDragEnd: (id: string, x: number, y: number) => void;
+  editingUsers?: string[]; // Array of user IDs currently editing this rectangle
+  currentUserId?: string; // Current user's ID for styling decisions
+  allUserIds?: string[]; // All user IDs for color assignment
 }
 
-export const RectNode = forwardRef<any, RectNodeProps>(({ rect, isSelected, onClick, onDragMove, onDragEnd }, ref) => {
+export const RectNode = forwardRef<any, RectNodeProps>(({ 
+  rect, 
+  isSelected, 
+  onClick, 
+  onDragMove, 
+  onDragEnd, 
+  editingUsers = [], 
+  currentUserId,
+  allUserIds = []
+}, ref) => {
   const shapeRef = useRef<any>(null);
   // Suppress unused variable warning - will be used for advanced interactions in future PRs
   console.log('Shape ref:', shapeRef);
@@ -54,6 +67,14 @@ export const RectNode = forwardRef<any, RectNodeProps>(({ rect, isSelected, onCl
     onDragEnd(rect.id, node.x(), node.y());
   };
 
+  // Get visual styling based on editing state
+  const styling = getRectangleStyling(rect.id, isSelected, editingUsers, currentUserId, allUserIds);
+  
+  // Debug logging for visual feedback
+  if (editingUsers.length > 0) {
+    console.log(`🎨 RectNode: Rectangle ${rect.id} being edited by users:`, editingUsers, 'styling:', styling);
+  }
+
   return (
     <KonvaRect
       ref={ref}
@@ -62,9 +83,11 @@ export const RectNode = forwardRef<any, RectNodeProps>(({ rect, isSelected, onCl
       width={rect.width}
       height={rect.height}
       rotation={rect.rotation}
-      fill={isSelected ? '#e3f2fd' : '#bbdefb'}
-      stroke={isSelected ? '#1976d2' : '#2196f3'}
-      strokeWidth={isSelected ? 3 : 2}
+      fill={styling.fill}
+      stroke={styling.stroke}
+      strokeWidth={styling.strokeWidth}
+      dash={styling.dash}
+      opacity={styling.opacity}
       onClick={handleClick}
       onTap={handleClick}
       onDragMove={handleDragMove}
