@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react'
 import { onAuthStateChanged, type User } from 'firebase/auth'
 import { auth } from './config/firebaseClient'
-import { setInitialPresence, cleanupStalePresence } from './services/presence'
+import { setInitialPresence, cleanupStalePresence, cleanupStaleLocks } from './services/presence'
 import './App.css'
 import { useUIStore } from './state/uiStore'
 import { CanvasStage } from './components/CanvasStage'
@@ -72,8 +72,9 @@ function App() {
     const cleanupInterval = setInterval(async () => {
       try {
         await cleanupStalePresence()
+        await cleanupStaleLocks()
       } catch (error) {
-        console.error('Failed to cleanup stale presence:', error)
+        console.error('Failed to cleanup stale presence/locks:', error)
       }
     }, 120000) // Run cleanup every 2 minutes
 

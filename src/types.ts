@@ -52,3 +52,10 @@ export type TransformOperation = 'move' | 'resize' | 'rotate' | 'create' | 'dele
 
 // Transform subscription callback
 export type TransformCallback = (transforms: Record<string, Transform>) => void;
+
+// Object lock interface (Realtime Database)
+export interface ObjectLock {
+  ownerId: string; // Firebase Auth uid
+  ownerName: string; // user's display name
+  timestamp: number; // ms since epoch when lock was acquired
+}

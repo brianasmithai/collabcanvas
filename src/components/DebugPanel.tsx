@@ -1,5 +1,6 @@
 import React from 'react';
 import { useUIStore } from '../state/uiStore';
+import { transformService } from '../services/transforms';
 import type { User } from 'firebase/auth';
 
 interface DebugPanelProps {
@@ -76,6 +77,36 @@ export const DebugPanel: React.FC<DebugPanelProps> = ({ user, dimensions, showIn
       }}>
         <div>• Press 'I' to toggle instructions</div>
         <div>• Press 'D' to toggle debug info</div>
+      </div>
+      
+      <div style={{ 
+        marginTop: '12px', 
+        paddingTop: '12px',
+        borderTop: '1px solid #eee'
+      }}>
+        <button 
+          onClick={async () => {
+            console.log('🧪 Testing RTDB connection...');
+            const success = await transformService.testConnection();
+            if (success) {
+              alert('✅ RTDB connection test successful! Check console for details.');
+            } else {
+              alert('❌ RTDB connection test failed! Check console for details.');
+            }
+          }}
+          style={{
+            background: '#007bff',
+            color: 'white',
+            border: 'none',
+            padding: '8px 12px',
+            borderRadius: '4px',
+            fontSize: '12px',
+            cursor: 'pointer',
+            width: '100%'
+          }}
+        >
+          🧪 Test RTDB Connection
+        </button>
       </div>
     </div>
   );

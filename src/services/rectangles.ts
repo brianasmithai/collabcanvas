@@ -179,26 +179,34 @@ export class HybridRectanglesService {
   async updateRectangleHybrid(
     id: string, 
     updates: Partial<Omit<Rect, 'id'>>, 
-    isTransformComplete: boolean = false
+    isTransformComplete: boolean = false,
+    isSelected: boolean = false
   ): Promise<void> {
-    console.log(`🚀 HybridRectanglesService: updateRectangleHybrid called for ${id}`, updates, 'complete:', isTransformComplete);
+    console.log(`🚀 HybridRectanglesService: updateRectangleHybrid called for ${id}`, updates, 'complete:', isTransformComplete, 'selected:', isSelected);
     try {
-      // Update transform in RTDB immediately for real-time updates
-      const transformUpdates: Partial<Transform> = {
-        ...updates,
-        updatedAt: Date.now(),
-        isActive: !isTransformComplete // Mark as inactive when transform is complete
-      };
+      if (isSelected) {
+        // Object is selected - update transform in RTDB for real-time updates
+        const transformUpdates: Partial<Transform> = {
+          ...updates,
+          updatedAt: Date.now(),
+          isActive: !isTransformComplete // Mark as inactive when transform is complete
+        };
+        
+        console.log(`📡 HybridRectanglesService: Sending to RTDB (selected object):`, transformUpdates);
+        await transformService.updateTransform(id, transformUpdates);
+        console.log(`🔄 HybridRectanglesService: Updated RTDB transform for ${id}, active: ${!isTransformComplete}`);
+      } else {
+        // Object is not selected - write directly to Firestore only
+        console.log(`📝 HybridRectanglesService: Writing directly to Firestore (unselected object):`, updates);
+        await updateRectangle(id, updates);
+        console.log(`✅ HybridRectanglesService: Updated Firestore for unselected object: ${id}`);
+      }
       
-      console.log(`📡 HybridRectanglesService: Sending to RTDB:`, transformUpdates);
-      await transformService.updateTransform(id, transformUpdates);
-      console.log(`🔄 HybridRectanglesService: Updated RTDB transform for ${id}, active: ${!isTransformComplete}`);
-      
-      if (isTransformComplete) {
+      if (isTransformComplete && isSelected) {
         // Transform completed - immediately sync final state to Firestore
         console.log('🔄 HybridRectanglesService: Transform complete - syncing final state to Firestore');
         await this.syncTransformToFirestore(id, updates);
-      } else {
+      } else if (!isTransformComplete && isSelected) {
         // Transform in progress - schedule debounced Firestore sync
         console.log('⏰ HybridRectanglesService: Scheduling debounced Firestore sync');
         this.scheduleFirestoreSync(id, updates);
@@ -288,6 +296,7 @@ export class HybridRectanglesService {
 
     // Subscribe to RTDB transforms
     transformUnsubscribe = transformService.subscribeToTransforms((transforms) => {
+      console.log('📡 HybridRectanglesService: Received transforms from RTDB:', transforms);
       currentTransforms = transforms;
       this.mergeRectanglesWithTransforms(currentRectangles, currentTransforms, onUpdate);
     });
@@ -298,6 +307,7 @@ export class HybridRectanglesService {
       transformUnsubscribe?.();
     };
   }
+
 
   /**
    * Validate data consistency between RTDB and Firestore

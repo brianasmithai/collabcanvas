@@ -9,6 +9,7 @@ import { useCanvasInteraction } from '../hooks/useCanvasInteraction';
 import { useCursorTracking } from '../hooks/useCursorTracking';
 import { useRectangleInteraction } from '../hooks/useRectangleInteraction';
 import { usePresence } from '../hooks/usePresence';
+import { useLocks } from '../hooks/useLocks';
 
 interface CanvasStageProps {
   width: number;
@@ -22,8 +23,12 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
   const rectRefs = useRef<{ [key: string]: any }>({});
   
   const { viewport, selectionIds } = useUIStore();
-  const { rectangles, loading, error } = useRectangles();
+  const { rectangles, loading, error, liveTransforms } = useRectangles();
   const presenceMap = usePresence();
+  const { isLockedByOther, getLockOwner } = useLocks();
+  
+  // Get current user's name from presence map
+  const currentUserName = currentUserId ? presenceMap[currentUserId]?.displayName || presenceMap[currentUserId]?.name : undefined;
 
   // Helper function to get users editing a specific rectangle
   const getEditingUsers = (rectId: string): string[] => {
@@ -54,12 +59,35 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
     handleRectDragMove,
     handleRectDragEnd,
     handleTransformEnd,
-  } = useRectangleInteraction(stageRef, transformerRef, rectRefs, currentUserId);
+  } = useRectangleInteraction(stageRef, transformerRef, rectRefs, currentUserId, currentUserName);
 
+  // Apply live transforms to Konva nodes in real-time
   useEffect(() => {
+    console.log('🎨 CanvasStage: Applying live transforms. Live transforms:', liveTransforms, 'Selection IDs:', selectionIds);
+    console.log('🎨 CanvasStage: Live transform keys:', Object.keys(liveTransforms));
+    console.log('🎨 CanvasStage: Rectangle count:', rectangles.length);
+    
     rectangles.forEach(rect => {
       const node = rectRefs.current[rect.id];
-      if (node) {
+      console.log('🎨 CanvasStage: Processing rectangle', rect.id, 'node exists:', !!node);
+      
+      if (!node) {
+        console.log('🎨 CanvasStage: No node found for rectangle', rect.id);
+        return;
+      }
+      
+      // Check if there's an active live transform for this rectangle
+      const liveTransform = liveTransforms[rect.id];
+      console.log('🎨 CanvasStage: Live transform for', rect.id, ':', liveTransform);
+      
+      // Skip if:
+      // 1. No live transform exists
+      // 2. Current user is editing this rectangle (don't override own actions)
+      if (!liveTransform || selectionIds.includes(rect.id)) {
+        // Apply base rectangle data
+        if (liveTransform && selectionIds.includes(rect.id)) {
+          console.log('🎨 CanvasStage: Skipping live transform for own selection:', rect.id);
+        }
         node.x(rect.x);
         node.y(rect.y);
         node.width(rect.width);
@@ -67,9 +95,23 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
         node.rotation(rect.rotation);
         node.scaleX(1);
         node.scaleY(1);
+        return;
       }
+      
+      // Apply live transform (another user is actively editing)
+      console.log('🎨 CanvasStage: Applying live transform for', rect.id, 'from', liveTransform.updatedBy, 'at', liveTransform.x, liveTransform.y);
+      requestAnimationFrame(() => {
+        node.x(liveTransform.x);
+        node.y(liveTransform.y);
+        node.width(liveTransform.width);
+        node.height(liveTransform.height);
+        node.rotation(liveTransform.rotation);
+        node.scaleX(1);
+        node.scaleY(1);
+        node.getLayer()?.batchDraw();
+      });
     });
-  }, [rectangles]);
+  }, [rectangles, liveTransforms, selectionIds]);
 
   if (loading) return <div>Loading canvas...</div>;
   if (error) return <div>Error loading rectangles: {error.message}</div>;
@@ -110,6 +152,9 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
         
         {rectangles.map((rect) => {
           const editingUsers = getEditingUsers(rect.id);
+          const lockedByOther = currentUserId ? isLockedByOther(rect.id, currentUserId) : false;
+          const lockOwner = getLockOwner(rect.id);
+          
           return (
             <RectNode
               key={rect.id}
@@ -124,6 +169,8 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
               editingUsers={editingUsers}
               currentUserId={currentUserId}
               allUserIds={allUserIds}
+              isLockedByOther={lockedByOther}
+              lockOwnerName={lockOwner?.ownerName}
             />
           );
         })}

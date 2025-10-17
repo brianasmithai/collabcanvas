@@ -16,6 +16,14 @@
       }
     },
     
+    // Lock data - authenticated users can claim free locks or refresh their own
+    "locks": {
+      "$objectId": {
+        ".read": "auth != null",
+        ".write": "auth != null && (!data.exists() || data.child('ownerId').val() == auth.uid)"
+      }
+    },
+    
     // Default rule - deny all other access
     ".read": false,
     ".write": false

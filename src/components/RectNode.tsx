@@ -14,6 +14,8 @@ interface RectNodeProps {
   editingUsers?: string[]; // Array of user IDs currently editing this rectangle
   currentUserId?: string; // Current user's ID for styling decisions
   allUserIds?: string[]; // All user IDs for color assignment
+  isLockedByOther?: boolean; // Whether this object is locked by another user
+  lockOwnerName?: string; // Name of the user who has locked this object
 }
 
 export const RectNode = forwardRef<any, RectNodeProps>(({ 
@@ -24,11 +26,12 @@ export const RectNode = forwardRef<any, RectNodeProps>(({
   onDragEnd, 
   editingUsers = [], 
   currentUserId,
-  allUserIds = []
+  allUserIds = [],
+  isLockedByOther = false,
+  lockOwnerName
 }, ref) => {
-  const shapeRef = useRef<any>(null);
-  // Suppress unused variable warning - will be used for advanced interactions in future PRs
-  console.log('Shape ref:', shapeRef);
+  // Use the forwarded ref for the Konva Rect component
+  console.log('Shape ref:', ref);
 
   // Create throttled update function for drag moves
   const throttledUpdateRef = useRef<((x: number, y: number) => void) | null>(null);
@@ -36,7 +39,7 @@ export const RectNode = forwardRef<any, RectNodeProps>(({
   if (!throttledUpdateRef.current && onDragMove) {
     throttledUpdateRef.current = throttle((x: number, y: number) => {
       onDragMove(rect.id, x, y);
-    }, 100); // Throttle to 10 updates per second
+    }, 50); // Throttle to 20 updates per second for better real-time feel
   }
 
   // Combine refs
@@ -70,9 +73,22 @@ export const RectNode = forwardRef<any, RectNodeProps>(({
   // Get visual styling based on editing state
   const styling = getRectangleStyling(isSelected, editingUsers, currentUserId, allUserIds);
   
+  // Override styling for locked objects
+  const finalStyling = isLockedByOther ? {
+    ...styling,
+    opacity: 0.5, // Make locked objects semi-transparent
+    stroke: '#ff6b6b', // Red border for locked objects
+    strokeWidth: 3,
+    dash: [10, 5], // Dashed border for locked objects
+  } : styling;
+  
   // Debug logging for visual feedback
   if (editingUsers.length > 0) {
-    console.log(`🎨 RectNode: Rectangle ${rect.id} being edited by users:`, editingUsers, 'styling:', styling);
+    console.log(`🎨 RectNode: Rectangle ${rect.id} being edited by users:`, editingUsers, 'styling:', finalStyling);
+  }
+  
+  if (isLockedByOther) {
+    console.log(`🔒 RectNode: Rectangle ${rect.id} is locked by ${lockOwnerName}`);
   }
 
   return (
@@ -83,16 +99,17 @@ export const RectNode = forwardRef<any, RectNodeProps>(({
       width={rect.width}
       height={rect.height}
       rotation={rect.rotation}
-      fill={styling.fill}
-      stroke={styling.stroke}
-      strokeWidth={styling.strokeWidth}
-      dash={styling.dash}
-      opacity={styling.opacity}
+      fill={finalStyling.fill}
+      stroke={finalStyling.stroke}
+      strokeWidth={finalStyling.strokeWidth}
+      dash={finalStyling.dash}
+      opacity={finalStyling.opacity}
       onClick={handleClick}
       onTap={handleClick}
-      onDragMove={handleDragMove}
-      onDragEnd={handleDragEnd}
-      draggable={true}
+      onDragMove={isLockedByOther ? undefined : handleDragMove} // Disable drag for locked objects
+      onDragEnd={isLockedByOther ? undefined : handleDragEnd} // Disable drag for locked objects
+      draggable={!isLockedByOther} // Disable dragging for locked objects
+      cursor={isLockedByOther ? 'not-allowed' : 'pointer'} // Change cursor for locked objects
     />
   );
 });

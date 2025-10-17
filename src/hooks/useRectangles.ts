@@ -4,7 +4,8 @@ import {
   deleteRectangles,
   hybridRectanglesService
 } from '../services/rectangles';
-import type { Rect } from '../types';
+import { transformService } from '../services/transforms';
+import type { Rect, Transform } from '../types';
 
 // Hook return type
 export interface UseRectanglesReturn {
@@ -26,6 +27,8 @@ export interface UseRectanglesReturn {
     }>;
   }>;
   forceSyncAll: () => Promise<void>;
+  // Live transform data for real-time visual updates
+  liveTransforms: Record<string, Transform>;
 }
 
 /**
@@ -36,6 +39,7 @@ export const useRectangles = (): UseRectanglesReturn => {
   const [rectangles, setRectangles] = useState<Rect[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [liveTransforms, setLiveTransforms] = useState<Record<string, Transform>>({});
 
   // Subscribe to rectangles with hybrid storage (Firestore + RTDB)
   useEffect(() => {
@@ -63,6 +67,28 @@ export const useRectangles = (): UseRectanglesReturn => {
     };
   }, []);
 
+  // Subscribe to live transforms (active transforms only) for real-time visual updates
+  useEffect(() => {
+    console.log('🔗 useRectangles: Setting up live transforms subscription');
+    
+    const unsubscribe = transformService.subscribeToTransforms((transforms) => {
+      console.log('📡 useRectangles: Raw transforms received:', transforms);
+      
+      // Filter to only active transforms for live visual updates
+      const activeTransforms = Object.fromEntries(
+        Object.entries(transforms).filter(([_, transform]) => transform.isActive)
+      );
+      console.log('⚡ useRectangles: Received live transforms:', Object.keys(activeTransforms).length, 'active', activeTransforms);
+      setLiveTransforms(activeTransforms);
+    });
+
+    // Cleanup subscription on unmount
+    return () => {
+      console.log('🔌 useRectangles: Cleaning up live transforms subscription');
+      unsubscribe();
+    };
+  }, []);
+
   // Create a new rectangle with hybrid storage
   const createRect = useCallback(async (rect: Omit<Rect, 'id'>): Promise<string> => {
     try {
@@ -80,11 +106,12 @@ export const useRectangles = (): UseRectanglesReturn => {
   const updateRect = useCallback(async (
     id: string, 
     updates: Partial<Omit<Rect, 'id'>>,
-    isTransformComplete: boolean = false
+    isTransformComplete: boolean = false,
+    isSelected: boolean = false
   ): Promise<void> => {
     try {
-      console.log('✏️ useRectangles: Updating rectangle with hybrid storage:', id, updates, 'complete:', isTransformComplete);
-      await hybridRectanglesService.updateRectangleHybrid(id, updates, isTransformComplete);
+      console.log('✏️ useRectangles: Updating rectangle with hybrid storage:', id, updates, 'complete:', isTransformComplete, 'selected:', isSelected);
+      await hybridRectanglesService.updateRectangleHybrid(id, updates, isTransformComplete, isSelected);
       console.log('✅ useRectangles: Updated rectangle with hybrid storage:', id);
     } catch (err) {
       console.error('❌ useRectangles: Failed to update rectangle:', err);
@@ -155,5 +182,6 @@ export const useRectangles = (): UseRectanglesReturn => {
     deleteRects,
     validateConsistency,
     forceSyncAll,
+    liveTransforms,
   };
 };

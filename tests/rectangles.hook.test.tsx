@@ -57,6 +57,14 @@ vi.mock('../src/services/rectangles', () => ({
   subscribeToRectangles: vi.fn(),
 }));
 
+// Mock transform service
+vi.mock('../src/services/transforms', () => ({
+  transformService: {
+    subscribeToTransforms: vi.fn(),
+    cleanup: vi.fn(),
+  },
+}));
+
 describe('useRectangles', () => {
   const mockOnSnapshot = onSnapshot as any;
   const mockAddDoc = addDoc as any;
@@ -82,6 +90,11 @@ describe('useRectangles', () => {
     });
     (hybridRectanglesService.forceSyncAllTransformsToFirestore as any).mockResolvedValue(undefined);
     (hybridRectanglesService.cleanup as any).mockReturnValue(undefined);
+
+    // Mock transform service methods
+    const { transformService } = await import('../src/services/transforms');
+    (transformService.subscribeToTransforms as any).mockReturnValue(vi.fn());
+    (transformService.cleanup as any).mockReturnValue(undefined);
   });
 
   it('should return initial state with loading true and hybrid methods', () => {
@@ -90,6 +103,7 @@ describe('useRectangles', () => {
     expect(result.current.rectangles).toEqual([]);
     expect(result.current.loading).toBe(true);
     expect(result.current.error).toBe(null);
+    expect(result.current.liveTransforms).toEqual({});
     expect(typeof result.current.createRect).toBe('function');
     expect(typeof result.current.updateRect).toBe('function');
     expect(typeof result.current.deleteRect).toBe('function');
@@ -363,6 +377,111 @@ describe('useRectangles', () => {
 
       expect(mockUnsubscribe).toHaveBeenCalled();
       expect(hybridRectanglesService.cleanup).toHaveBeenCalled();
+    });
+  });
+
+  describe('Live Transform Subscription', () => {
+    it('should set up live transforms subscription on mount', async () => {
+      const { transformService } = await import('../src/services/transforms');
+      
+      renderHook(() => useRectangles());
+      
+      expect(transformService.subscribeToTransforms).toHaveBeenCalled();
+    });
+
+    it('should update live transforms when subscription data changes', async () => {
+      const { transformService } = await import('../src/services/transforms');
+      
+      // Mock subscription callback
+      let subscriptionCallback: ((transforms: any) => void) | null = null;
+      (transformService.subscribeToTransforms as any).mockImplementation((callback: any) => {
+        subscriptionCallback = callback;
+        return vi.fn(); // unsubscribe function
+      });
+
+      const { result } = renderHook(() => useRectangles());
+
+      // Simulate live transform updates
+      const testTransforms = {
+        'rect-1': {
+          id: 'rect-1',
+          x: 100,
+          y: 200,
+          width: 150,
+          height: 100,
+          rotation: 0,
+          updatedAt: Date.now(),
+          updatedBy: 'user1',
+          isActive: true
+        },
+        'rect-2': {
+          id: 'rect-2',
+          x: 200,
+          y: 300,
+          width: 100,
+          height: 50,
+          rotation: 0,
+          updatedAt: Date.now(),
+          updatedBy: 'user2',
+          isActive: false // Should be filtered out
+        }
+      };
+
+      act(() => {
+        subscriptionCallback?.(testTransforms);
+      });
+
+      // Should only include active transforms
+      expect(result.current.liveTransforms).toEqual({
+        'rect-1': testTransforms['rect-1']
+      });
+    });
+
+    it('should filter out inactive transforms from live transforms', async () => {
+      const { transformService } = await import('../src/services/transforms');
+      
+      let subscriptionCallback: ((transforms: any) => void) | null = null;
+      (transformService.subscribeToTransforms as any).mockImplementation((callback: any) => {
+        subscriptionCallback = callback;
+        return vi.fn();
+      });
+
+      const { result } = renderHook(() => useRectangles());
+
+      // Simulate transforms with only inactive ones
+      const testTransforms = {
+        'rect-1': {
+          id: 'rect-1',
+          x: 100,
+          y: 200,
+          width: 150,
+          height: 100,
+          rotation: 0,
+          updatedAt: Date.now(),
+          updatedBy: 'user1',
+          isActive: false
+        }
+      };
+
+      act(() => {
+        subscriptionCallback?.(testTransforms);
+      });
+
+      // Should be empty since no active transforms
+      expect(result.current.liveTransforms).toEqual({});
+    });
+
+    it('should cleanup live transforms subscription on unmount', async () => {
+      const { transformService } = await import('../src/services/transforms');
+      
+      const mockUnsubscribe = vi.fn();
+      (transformService.subscribeToTransforms as any).mockReturnValue(mockUnsubscribe);
+
+      const { unmount } = renderHook(() => useRectangles());
+
+      unmount();
+
+      expect(mockUnsubscribe).toHaveBeenCalled();
     });
   });
 });
