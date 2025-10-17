@@ -64,10 +64,14 @@ export const EDITING_STATES = {
     fill: '#e3f2fd',
     stroke: '#1976d2',
     strokeWidth: 3,
+    dash: undefined,
+    opacity: 1,
   },
   
   // Other user's selection
   OTHER_SELECTED: {
+    fill: '#bbdefb',
+    stroke: '#2196f3',
     strokeWidth: 2,
     dash: [8, 4],
     opacity: 0.8,
@@ -75,6 +79,8 @@ export const EDITING_STATES = {
   
   // Object being actively edited (dragged/resized/rotated)
   BEING_EDITED: {
+    fill: '#bbdefb',
+    stroke: '#2196f3',
     strokeWidth: 3,
     dash: [4, 4],
     opacity: 0.9,
@@ -85,8 +91,10 @@ export const EDITING_STATES = {
     fill: '#bbdefb',
     stroke: '#2196f3',
     strokeWidth: 2,
+    dash: undefined,
+    opacity: 1,
   },
-} as const;
+};
 
 /**
  * Get visual styling for a rectangle based on editing state
@@ -98,7 +106,6 @@ export const EDITING_STATES = {
  * @returns Styling object for the rectangle
  */
 export const getRectangleStyling = (
-  rectId: string,
   isSelected: boolean,
   editingUsers: string[],
   currentUserId?: string,

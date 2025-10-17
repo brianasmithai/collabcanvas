@@ -183,7 +183,7 @@ describe('useRectangles', () => {
       await result.current.updateRect('rect1', updates);
     });
 
-    expect(hybridRectanglesService.updateRectangleHybrid).toHaveBeenCalledWith('rect1', updates);
+    expect(hybridRectanglesService.updateRectangleHybrid).toHaveBeenCalledWith('rect1', updates, false);
   });
 
   it('should delete rectangle with hybrid storage successfully', async () => {

@@ -67,7 +67,7 @@ describe('colors utility', () => {
 
   describe('getRectangleStyling', () => {
     test('should return self-selected styling when current user has selected rectangle', () => {
-      const styling = getRectangleStyling('rect1', true, ['user1'], 'user1', ['user1', 'user2']);
+      const styling = getRectangleStyling(true, ['user1'], 'user1', ['user1', 'user2']);
       
       expect(styling).toEqual({
         ...EDITING_STATES.SELF_SELECTED,
@@ -76,7 +76,7 @@ describe('colors utility', () => {
     });
 
     test('should return other-selected styling when other users are editing', () => {
-      const styling = getRectangleStyling('rect1', false, ['user2'], 'user1', ['user1', 'user2']);
+      const styling = getRectangleStyling(false, ['user2'], 'user1', ['user1', 'user2']);
       
       expect(styling.strokeWidth).toBe(EDITING_STATES.OTHER_SELECTED.strokeWidth);
       expect(styling.dash).toEqual(EDITING_STATES.OTHER_SELECTED.dash);
@@ -85,13 +85,13 @@ describe('colors utility', () => {
     });
 
     test('should return default styling when no users are editing', () => {
-      const styling = getRectangleStyling('rect1', false, [], 'user1', ['user1', 'user2']);
+      const styling = getRectangleStyling(false, [], 'user1', ['user1', 'user2']);
       
       expect(styling).toEqual(EDITING_STATES.DEFAULT);
     });
 
     test('should ignore current user in editing users list', () => {
-      const styling = getRectangleStyling('rect1', false, ['user1', 'user2'], 'user1', ['user1', 'user2']);
+      const styling = getRectangleStyling(false, ['user1', 'user2'], 'user1', ['user1', 'user2']);
       
       // Should treat as other users editing (user2), not self-selected
       expect(styling.strokeWidth).toBe(EDITING_STATES.OTHER_SELECTED.strokeWidth);
@@ -99,7 +99,7 @@ describe('colors utility', () => {
     });
 
     test('should prioritize self-selected over other users editing', () => {
-      const styling = getRectangleStyling('rect1', true, ['user2'], 'user1', ['user1', 'user2']);
+      const styling = getRectangleStyling(true, ['user2'], 'user1', ['user1', 'user2']);
       
       // Self-selected should take precedence
       expect(styling).toEqual({

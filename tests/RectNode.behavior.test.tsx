@@ -38,9 +38,13 @@ describe('RectNode', () => {
   };
 
   const mockOnClick = vi.fn();
+  const mockOnDragMove = vi.fn();
+  const mockOnDragEnd = vi.fn();
 
   beforeEach(() => {
     mockOnClick.mockClear();
+    mockOnDragMove.mockClear();
+    mockOnDragEnd.mockClear();
   });
 
   test('should render rectangle with correct props', () => {
@@ -65,13 +69,18 @@ describe('RectNode', () => {
       <RectNode 
         rect={mockRect} 
         isSelected={true} 
-        onClick={mockOnClick} 
+        onClick={mockOnClick}
+        onDragMove={mockOnDragMove}
+        onDragEnd={mockOnDragEnd}
+        editingUsers={[]}
+        currentUserId="current-user"
+        allUserIds={['current-user', 'other-user']}
       />
     );
     
     const rect = getByTestId('konva-rect');
     expect(rect).toHaveAttribute('fill', '#e3f2fd');
-    expect(rect).toHaveAttribute('stroke', '#1976d2');
+    expect(rect).toHaveAttribute('stroke', '#28a745'); // Current user gets green color
     expect(rect).toHaveAttribute('data-stroke-width', '3');
   });
 
@@ -80,7 +89,12 @@ describe('RectNode', () => {
       <RectNode 
         rect={mockRect} 
         isSelected={false} 
-        onClick={mockOnClick} 
+        onClick={mockOnClick}
+        onDragMove={mockOnDragMove}
+        onDragEnd={mockOnDragEnd}
+        editingUsers={[]}
+        currentUserId="current-user"
+        allUserIds={['current-user', 'other-user']}
       />
     );
     
@@ -147,19 +161,22 @@ describe('RectNode', () => {
         rect={mockRect} 
         isSelected={true} 
         onClick={mockOnClick}
+        onDragMove={mockOnDragMove}
+        onDragEnd={mockOnDragEnd}
         editingUsers={['current-user']}
         currentUserId="current-user"
+        allUserIds={['current-user', 'other-user']}
       />
     );
     
     const rect = getByTestId('konva-rect');
     // Should use self-selected styling, not other-user styling
     expect(rect).toHaveAttribute('data-fill', '#e3f2fd');
-    expect(rect).toHaveAttribute('data-stroke', '#1976d2');
+    expect(rect).toHaveAttribute('data-stroke', '#28a745'); // Current user gets green color
     expect(rect).toHaveAttribute('data-stroke-width', '3');
-    // Should not have dash or opacity for self-selected
+    // Should not have dash for self-selected, but opacity should be 1
     expect(rect).not.toHaveAttribute('data-dash');
-    expect(rect).not.toHaveAttribute('data-opacity');
+    expect(rect).toHaveAttribute('data-opacity', '1');
   });
 
   test('should apply default styling when no users are editing', () => {
@@ -168,8 +185,11 @@ describe('RectNode', () => {
         rect={mockRect} 
         isSelected={false} 
         onClick={mockOnClick}
+        onDragMove={mockOnDragMove}
+        onDragEnd={mockOnDragEnd}
         editingUsers={[]}
         currentUserId="current-user"
+        allUserIds={['current-user', 'other-user']}
       />
     );
     
@@ -177,8 +197,8 @@ describe('RectNode', () => {
     expect(rect).toHaveAttribute('data-fill', '#bbdefb');
     expect(rect).toHaveAttribute('data-stroke', '#2196f3');
     expect(rect).toHaveAttribute('data-stroke-width', '2');
-    // Should not have dash or opacity for default
+    // Should not have dash for default, but opacity should be 1
     expect(rect).not.toHaveAttribute('data-dash');
-    expect(rect).not.toHaveAttribute('data-opacity');
+    expect(rect).toHaveAttribute('data-opacity', '1');
   });
 });

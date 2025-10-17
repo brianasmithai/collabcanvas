@@ -68,7 +68,7 @@ export const RectNode = forwardRef<any, RectNodeProps>(({
   };
 
   // Get visual styling based on editing state
-  const styling = getRectangleStyling(rect.id, isSelected, editingUsers, currentUserId, allUserIds);
+  const styling = getRectangleStyling(isSelected, editingUsers, currentUserId, allUserIds);
   
   // Debug logging for visual feedback
   if (editingUsers.length > 0) {
