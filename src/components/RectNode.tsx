@@ -91,6 +91,9 @@ export const RectNode = forwardRef<any, RectNodeProps>(({
     console.log(`🔒 RectNode: Rectangle ${rect.id} is locked by ${lockOwnerName}`);
   }
 
+  // Only allow dragging if selected AND not locked by another user
+  const canDrag = isSelected && !isLockedByOther;
+  
   return (
     <KonvaRect
       ref={ref}
@@ -106,10 +109,10 @@ export const RectNode = forwardRef<any, RectNodeProps>(({
       opacity={finalStyling.opacity}
       onClick={handleClick}
       onTap={handleClick}
-      onDragMove={isLockedByOther ? undefined : handleDragMove} // Disable drag for locked objects
-      onDragEnd={isLockedByOther ? undefined : handleDragEnd} // Disable drag for locked objects
-      draggable={!isLockedByOther} // Disable dragging for locked objects
-      cursor={isLockedByOther ? 'not-allowed' : 'pointer'} // Change cursor for locked objects
+      onDragMove={canDrag ? handleDragMove : undefined}
+      onDragEnd={canDrag ? handleDragEnd : undefined}
+      draggable={canDrag}
+      cursor={isLockedByOther ? 'not-allowed' : (isSelected ? 'move' : 'pointer')}
     />
   );
 });
