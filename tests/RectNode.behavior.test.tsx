@@ -116,7 +116,7 @@ describe('RectNode', () => {
     const rect = getByTestId('konva-rect');
     fireEvent.click(rect);
     
-    expect(mockOnClick).toHaveBeenCalledWith('test-rect');
+    expect(mockOnClick).toHaveBeenCalledWith('test-rect', expect.any(Object));
     expect(mockOnClick).toHaveBeenCalledTimes(1);
   });
 
@@ -132,7 +132,7 @@ describe('RectNode', () => {
     const rect = getByTestId('konva-rect');
     fireEvent.touchStart(rect);
     
-    expect(mockOnClick).toHaveBeenCalledWith('test-rect');
+    expect(mockOnClick).toHaveBeenCalledWith('test-rect', expect.any(Object));
     expect(mockOnClick).toHaveBeenCalledTimes(1);
   });
 

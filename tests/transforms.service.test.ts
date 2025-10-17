@@ -56,7 +56,7 @@ describe('TransformService', () => {
       expect(firebaseDatabase.ref).toHaveBeenCalledWith({}, 'transforms/test-id');
       expect(firebaseDatabase.set).toHaveBeenCalledWith({}, {
         ...mockTransform,
-        updatedAt: 'mock-timestamp'
+        updatedAt: expect.any(Number)
       });
     });
 
@@ -179,7 +179,7 @@ describe('TransformService', () => {
 
       transformService.subscribeToTransforms(mockCallback);
 
-      expect(consoleSpy).toHaveBeenCalledWith('Error in transform subscription:', expect.any(Error));
+      expect(consoleSpy).toHaveBeenCalledWith('❌ TransformService: Error in transform subscription', expect.any(String), ':', expect.any(Error));
       consoleSpy.mockRestore();
     });
   });
@@ -246,7 +246,7 @@ describe('TransformService', () => {
 
       expect(firebaseDatabase.set).toHaveBeenCalledWith({}, {
         ...updates,
-        updatedAt: 'mock-timestamp'
+        updatedAt: expect.any(Number)
       });
     });
 

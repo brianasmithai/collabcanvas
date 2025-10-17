@@ -128,7 +128,7 @@ describe('Live Transform Performance', () => {
       });
 
       const { ref, set, get } = await import('firebase/database');
-      vi.mocked(ref).mockImplementation((path) => ({ key: path.split('/').pop() }));
+      vi.mocked(ref).mockImplementation((path) => ({ key: typeof path === 'string' ? path.split('/').pop() : 'mock-key' }));
       vi.mocked(set).mockImplementation(() => Promise.resolve());
 
       const startTime = performance.now();
@@ -407,7 +407,7 @@ describe('Live Transform Performance', () => {
       });
 
       const { ref, set, get } = await import('firebase/database');
-      vi.mocked(ref).mockImplementation((path) => ({ key: path.split('/').pop() }));
+      vi.mocked(ref).mockImplementation((path) => ({ key: typeof path === 'string' ? path.split('/').pop() : 'mock-key' }));
       vi.mocked(set).mockImplementation(() => Promise.resolve());
       vi.mocked(get).mockResolvedValue({ val: () => null }); // No existing transform
 

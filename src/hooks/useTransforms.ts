@@ -1,6 +1,7 @@
 // Hook for managing real-time transform subscriptions and operations
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { transformService } from '../services/transforms';
+import { updateNetworkStatus } from '../utils/performance';
 import type { Transform, TransformCallback } from '../types';
 
 /**
@@ -11,7 +12,10 @@ export function useTransforms() {
   const [transforms, setTransforms] = useState<Record<string, Transform>>({});
   const [isConnected, setIsConnected] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [connectionStatus, setConnectionStatus] = useState<'connected' | 'disconnected' | 'reconnecting'>('connected');
+  const [lastPing, setLastPing] = useState(0);
   const subscriptionRef = useRef<(() => void) | null>(null);
+  const pingIntervalRef = useRef<number | null>(null);
 
   // Subscribe to all transforms
   useEffect(() => {
@@ -19,6 +23,8 @@ export function useTransforms() {
       setTransforms(newTransforms);
       setIsConnected(true);
       setError(null);
+      setConnectionStatus('connected');
+      updateNetworkStatus('connected');
     };
 
     try {
@@ -27,13 +33,41 @@ export function useTransforms() {
       const errorMessage = err instanceof Error ? err.message : 'Failed to subscribe to transforms';
       setError(errorMessage);
       setIsConnected(false);
+      setConnectionStatus('disconnected');
+      updateNetworkStatus('disconnected');
     }
 
-    // Cleanup subscription on unmount
+    // Start network monitoring
+    const startNetworkMonitoring = () => {
+      if (pingIntervalRef.current) {
+        clearInterval(pingIntervalRef.current);
+      }
+      
+      pingIntervalRef.current = setInterval(async () => {
+        try {
+          const startTime = performance.now();
+          await transformService.testConnection();
+          const ping = performance.now() - startTime;
+          setLastPing(ping);
+          updateNetworkStatus('connected', ping);
+        } catch (err) {
+          setConnectionStatus('disconnected');
+          updateNetworkStatus('disconnected');
+        }
+      }, 5000); // Ping every 5 seconds
+    };
+
+    startNetworkMonitoring();
+
+    // Cleanup subscription and monitoring on unmount
     return () => {
       if (subscriptionRef.current) {
         subscriptionRef.current();
         subscriptionRef.current = null;
+      }
+      if (pingIntervalRef.current) {
+        clearInterval(pingIntervalRef.current);
+        pingIntervalRef.current = null;
       }
     };
   }, []);
@@ -107,6 +141,8 @@ export function useTransforms() {
     transforms,
     isConnected,
     error,
+    connectionStatus,
+    lastPing,
     setTransform,
     removeTransform,
     createTransform,

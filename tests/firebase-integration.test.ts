@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeAll, afterAll } from 'vitest';
-import { initializeApp } from 'firebase/app';
+import { initializeApp, getApp } from 'firebase/app';
 import { getAuth, signInWithEmailAndPassword, signOut } from 'firebase/auth';
 import { getDatabase, ref, set, get, onValue, off } from 'firebase/database';
 import { setPresence, setInitialPresence, updateCursor } from '../src/services/presence';
@@ -23,7 +23,12 @@ describe('Firebase Integration Tests', () => {
   let transformService: TransformService;
 
   beforeAll(async () => {
-    app = initializeApp(firebaseConfig);
+    try {
+      app = initializeApp(firebaseConfig);
+    } catch (error) {
+      // App already exists, get the existing one
+      app = getApp();
+    }
     auth = getAuth(app);
     db = getDatabase(app);
     transformService = new TransformService();
@@ -37,7 +42,7 @@ describe('Firebase Integration Tests', () => {
   });
 
   afterAll(async () => {
-    if (auth.currentUser) {
+    if (auth && auth.currentUser) {
       await signOut(auth);
     }
   });

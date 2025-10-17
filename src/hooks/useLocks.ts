@@ -1,6 +1,6 @@
 // Hook for managing real-time object locks
 import { useState, useEffect, useCallback } from 'react';
-import { ref, onValue, Unsubscribe } from 'firebase/database';
+import { ref, onValue, type Unsubscribe } from 'firebase/database';
 import { rtdb } from '../config/firebaseClient';
 import type { ObjectLock } from '../types';
 

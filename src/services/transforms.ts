@@ -5,8 +5,7 @@ import {
   remove, 
   onValue, 
   push, 
-  get,
-  serverTimestamp
+  get
 } from 'firebase/database';
 import type { 
   Unsubscribe
@@ -23,6 +22,7 @@ const TRANSFORMS_PATH = 'transforms';
  */
 export class TransformService {
   private subscriptions: Map<string, Unsubscribe> = new Map();
+  private subscriptionCounter = 0;
 
   /**
    * Create or update a transform in RTDB
@@ -74,7 +74,7 @@ export class TransformService {
   subscribeToTransforms(callback: TransformCallback): () => void {
     const transformsRef = ref(rtdb, TRANSFORMS_PATH);
     
-    const subscriptionId = `transforms_${Date.now()}`;
+    const subscriptionId = `transforms_${++this.subscriptionCounter}`;
     console.log('🔗 TransformService: Setting up subscription to', TRANSFORMS_PATH, 'ID:', subscriptionId);
     
     const unsubscribe = onValue(transformsRef, (snapshot) => {
@@ -119,7 +119,7 @@ export class TransformService {
     });
 
     // Store subscription for cleanup
-    const subscriptionId = `transform_${id}_${Date.now()}`;
+    const subscriptionId = `transform_${id}_${++this.subscriptionCounter}`;
     this.subscriptions.set(subscriptionId, unsubscribe);
 
     // Return cleanup function

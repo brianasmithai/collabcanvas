@@ -220,7 +220,7 @@ describe('Rectangles Service - Transform Updates', () => {
           updatedBy: 'user1'
         };
 
-        await hybridRectanglesService.updateRectangleHybrid('rect-1', updates);
+        await hybridRectanglesService.updateRectangleHybrid('rect-1', updates, false, true);
 
         expect(transformService.updateTransform).toHaveBeenCalledWith(
           'rect-1',
@@ -495,7 +495,7 @@ describe('Rectangles Service - Transform Updates', () => {
         updatedBy: 'user2'
       };
 
-      await hybridRectanglesService.updateRectangleHybrid('rect-1', updates);
+      await hybridRectanglesService.updateRectangleHybrid('rect-1', updates, false, true);
 
       // Should still call updateTransform (the service handles LWW internally)
       expect(transformService.updateTransform).toHaveBeenCalledWith(

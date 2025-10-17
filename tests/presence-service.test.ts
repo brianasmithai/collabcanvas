@@ -10,6 +10,8 @@ describe('Presence Service Tests', () => {
     testEnv = await initializeTestEnvironment({
       projectId: 'collabcanvas-9c044',
       database: {
+        host: 'localhost',
+        port: 9000,
         rules: `
         {
           "rules": {

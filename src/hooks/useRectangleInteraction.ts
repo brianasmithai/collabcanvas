@@ -3,7 +3,7 @@ import { useUIStore } from '../state/uiStore';
 import { useRectangles } from './useRectangles';
 import { useLocks } from './useLocks';
 import { screenToWorld } from '../utils/geometry';
-import { updateSelection, getObjectLock, tryClaimObjectLock, releaseObjectLock } from '../services/presence';
+import { updateSelection, tryClaimObjectLock, releaseObjectLock } from '../services/presence';
 import type { Rect } from '../types';
 import { throttle } from '../utils/throttle';
 
@@ -14,7 +14,7 @@ export const useRectangleInteraction = (
   currentUserId?: string,
   currentUserName?: string
 ) => {
-  const { selectionIds, setSelectionIds, clearSelection } = useUIStore();
+  const { selectionIds, setSelectionIds, clearSelection, toggleSelection, dragSelection, endDragSelection } = useUIStore();
   const { rectangles, createRect, updateRect, deleteRects } = useRectangles();
   const { viewport } = useUIStore();
   const { isLockedByOther, getLockOwner } = useLocks();
@@ -40,14 +40,19 @@ export const useRectangleInteraction = (
 
   const handleStageClick = useCallback(async (e: any) => {
     if (e.target === e.target.getStage()) {
-      clearSelection();
+      // Check if Ctrl/Cmd key is pressed for multi-select mode
+      const isCtrlPressed = e.evt.ctrlKey || e.evt.metaKey;
       
-      // Update selection in presence system (this will release locks)
-      if (currentUserId && currentUserName) {
-        try {
-          await updateSelection(currentUserId, [], currentUserName);
-        } catch (error) {
-          console.error('❌ Failed to update selection on stage click:', error);
+      if (!isCtrlPressed) {
+        clearSelection();
+        
+        // Update selection in presence system (this will release locks)
+        if (currentUserId && currentUserName) {
+          try {
+            await updateSelection(currentUserId, [], currentUserName);
+          } catch (error) {
+            console.error('❌ Failed to update selection on stage click:', error);
+          }
         }
       }
     }
@@ -66,12 +71,32 @@ export const useRectangleInteraction = (
     }
   }, [viewport, createRectangle, stageRef]);
 
-  const handleRectClick = useCallback(async (rectId: string) => {
+  const handleRectClick = useCallback(async (rectId: string, e?: any) => {
     if (!currentUserId) {
       console.warn('🔒 handleRectClick: No current user ID available');
       return;
     }
     const ownerNameFallback = currentUserName || 'User';
+
+    // Check if Ctrl/Cmd key is pressed for multi-select mode
+    const isCtrlPressed = e?.evt?.ctrlKey || e?.evt?.metaKey || false;
+
+    // If Ctrl+click, toggle selection without locking
+    if (isCtrlPressed) {
+      toggleSelection(rectId);
+      
+      // Update presence with new selection
+      const newSelectionIds = selectionIds.includes(rectId) 
+        ? selectionIds.filter(id => id !== rectId)
+        : [...selectionIds, rectId];
+      
+      try {
+        await updateSelection(currentUserId, newSelectionIds, ownerNameFallback);
+      } catch (e) {
+        console.error('❌ Failed to update presence after toggle:', e);
+      }
+      return;
+    }
 
     // Deselect path: if already selected, release lock then clear selection
     if (selectionIds.includes(rectId)) {
@@ -107,7 +132,53 @@ export const useRectangleInteraction = (
     } catch (e) {
       console.error('❌ Failed to update presence after lock claim:', e);
     }
-  }, [selectionIds, setSelectionIds, currentUserId, currentUserName, isLockedByOther, getLockOwner]);
+  }, [selectionIds, setSelectionIds, toggleSelection, currentUserId, currentUserName, isLockedByOther, getLockOwner]);
+
+  // Handle drag selection completion
+  const handleDragSelectionEnd = useCallback(async () => {
+    if (!dragSelection.isActive || !currentUserId || !currentUserName) {
+      return;
+    }
+
+    const selectionArea = {
+      x: Math.min(dragSelection.startX, dragSelection.endX),
+      y: Math.min(dragSelection.startY, dragSelection.endY),
+      width: Math.abs(dragSelection.endX - dragSelection.startX),
+      height: Math.abs(dragSelection.endY - dragSelection.startY),
+    };
+
+    // Find rectangles that intersect with the selection area
+    const intersectingRectIds: string[] = [];
+    
+    rectangles.forEach(rect => {
+      const rectRight = rect.x + rect.width;
+      const rectBottom = rect.y + rect.height;
+      const selectionRight = selectionArea.x + selectionArea.width;
+      const selectionBottom = selectionArea.y + selectionArea.height;
+
+      // Check if rectangle intersects with selection area
+      if (rect.x < selectionRight && 
+          rectRight > selectionArea.x && 
+          rect.y < selectionBottom && 
+          rectBottom > selectionArea.y) {
+        intersectingRectIds.push(rect.id);
+      }
+    });
+
+    if (intersectingRectIds.length > 0) {
+      // Add intersecting rectangles to selection
+      const newSelectionIds = [...new Set([...selectionIds, ...intersectingRectIds])];
+      setSelectionIds(newSelectionIds);
+      
+      try {
+        await updateSelection(currentUserId, newSelectionIds, currentUserName);
+      } catch (e) {
+        console.error('❌ Failed to update presence after drag selection:', e);
+      }
+    }
+
+    endDragSelection();
+  }, [dragSelection, rectangles, selectionIds, setSelectionIds, currentUserId, currentUserName, endDragSelection]);
 
   const handleRectDragMove = useCallback(async (rectId: string, newX: number, newY: number) => {
     console.log('🔄 useRectangleInteraction: Drag move received for', rectId, 'at', newX, newY);
@@ -118,7 +189,7 @@ export const useRectangleInteraction = (
         y: newY, 
         updatedAt: Date.now(),
         updatedBy: currentUserId || 'local-user'
-      }, false, true); // isTransformComplete = false, isSelected = true
+      }, false); // isTransformComplete = false
       console.log('✅ useRectangleInteraction: Drag move update sent to RTDB');
     } catch (err) {
       console.error('❌ useRectangleInteraction: Failed to update rectangle position during drag:', err);
@@ -135,7 +206,7 @@ export const useRectangleInteraction = (
         y: newY, 
         updatedAt: Date.now(),
         updatedBy: currentUserId || 'local-user'
-      }, true, true); // isTransformComplete = true, isSelected = true
+      }, true); // isTransformComplete = true
       console.log('✅ useRectangleInteraction: Final position saved to both RTDB and Firestore');
     } catch (err) {
       console.error('❌ useRectangleInteraction: Failed to update rectangle position:', err);
@@ -156,7 +227,7 @@ export const useRectangleInteraction = (
     throttledTransformUpdate.current = throttle(async (updates: Partial<Rect>, rectId: string) => {
       try {
         // Real-time transform update: RTDB only, no Firestore sync yet
-        await updateRect(rectId, updates, false, true); // isTransformComplete = false, isSelected = true
+        await updateRect(rectId, updates, false); // isTransformComplete = false
       } catch (err) {
         console.error('Failed to update rectangle transform:', err);
       }
@@ -191,7 +262,7 @@ export const useRectangleInteraction = (
               rotation: node.rotation(),
               updatedAt: Date.now(),
               updatedBy: currentUserId || 'local-user'
-            }, true, true); // isTransformComplete = true, isSelected = true
+            }, true); // isTransformComplete = true
           } catch (err) {
             console.error('Failed to update rectangle transform:', err);
           }
@@ -211,7 +282,7 @@ export const useRectangleInteraction = (
         // Explicitly update presence to clear selection for all users
         if (currentUserId) {
           console.log('🗑️ useRectangleInteraction: Updating presence to clear selection');
-          await updateSelection(currentUserId, []);
+          await updateSelection(currentUserId, [], 'User');
         }
       } catch (err) {
         console.error('Failed to delete rectangles:', err);
@@ -220,9 +291,9 @@ export const useRectangleInteraction = (
   }, [selectionIds, deleteRects, clearSelection, currentUserId]);
 
   useEffect(() => {
-    if (currentUserId) {
-      updateSelection(currentUserId, selectionIds);
-    }
+        if (currentUserId) {
+          updateSelection(currentUserId, selectionIds, 'User');
+        }
   }, [currentUserId, selectionIds]);
 
   // Clear selection if any selected rectangles are deleted by other users
@@ -237,7 +308,7 @@ export const useRectangleInteraction = (
         
         // Update presence to clear selection
         if (currentUserId) {
-          updateSelection(currentUserId, []);
+          updateSelection(currentUserId, [], 'User');
         }
       }
     }
@@ -294,5 +365,6 @@ export const useRectangleInteraction = (
     handleRectDragEnd,
     handleTransformEnd,
     deleteSelectedRectangles,
+    handleDragSelectionEnd,
   };
 };

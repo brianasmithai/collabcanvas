@@ -8,7 +8,7 @@ import type { Rect } from '../types';
 interface RectNodeProps {
   rect: Rect;
   isSelected: boolean;
-  onClick: (id: string) => void;
+  onClick: (id: string, e?: any) => void;
   onDragMove: (id: string, x: number, y: number) => void;
   onDragEnd: (id: string, x: number, y: number) => void;
   editingUsers?: string[]; // Array of user IDs currently editing this rectangle
@@ -45,7 +45,7 @@ export const RectNode = forwardRef<any, RectNodeProps>(({
   // Combine refs
   const handleClick = (e: any) => {
     e.cancelBubble = true; // Prevent stage click
-    onClick(rect.id);
+    onClick(rect.id, e);
   };
 
   const handleDragMove = (e: any) => {

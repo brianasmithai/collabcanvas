@@ -4,6 +4,7 @@ import { Stage, Layer, Transformer, Text } from 'react-konva';
 import { useUIStore } from '../state/uiStore';
 import { RectNode } from './RectNode';
 import { CursorLayer } from './CursorLayer';
+import { DragSelection } from './DragSelection';
 import { useRectangles } from '../hooks/useRectangles';
 import { useCanvasInteraction } from '../hooks/useCanvasInteraction';
 import { useCursorTracking } from '../hooks/useCursorTracking';
@@ -50,8 +51,6 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
   // Get all user IDs for color assignment
   const allUserIds = Object.keys(presenceMap);
 
-  const { isDragging, handleWheel, handleMouseDown, handleDragEnd, handleMouseUp } = useCanvasInteraction(stageRef);
-  const { handleMouseMove, handleMouseLeave } = useCursorTracking(stageRef, isDragging, currentUserId);
   const {
     handleStageClick,
     handleStageDoubleClick,
@@ -59,12 +58,16 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
     handleRectDragMove,
     handleRectDragEnd,
     handleTransformEnd,
+    handleDragSelectionEnd,
   } = useRectangleInteraction(stageRef, transformerRef, rectRefs, currentUserId, currentUserName);
+
+  const { isDragging, handleWheel, handleMouseDown, handleDragEnd, handleMouseUp, handleMouseMove: handleCanvasMouseMove } = useCanvasInteraction(stageRef, handleDragSelectionEnd);
+  const { handleMouseMove, handleMouseLeave } = useCursorTracking(stageRef, isDragging, currentUserId);
 
   // Apply live transforms to Konva nodes in real-time
   useEffect(() => {
     console.log('🎨 CanvasStage: Applying live transforms. Live transforms:', liveTransforms, 'Selection IDs:', selectionIds);
-    console.log('🎨 CanvasStage: Live transform keys:', Object.keys(liveTransforms));
+    console.log('🎨 CanvasStage: Live transform keys:', liveTransforms ? Object.keys(liveTransforms) : []);
     console.log('🎨 CanvasStage: Rectangle count:', rectangles.length);
     
     rectangles.forEach(rect => {
@@ -77,7 +80,7 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
       }
       
       // Check if there's an active live transform for this rectangle
-      const liveTransform = liveTransforms[rect.id];
+      const liveTransform = liveTransforms ? liveTransforms[rect.id] : undefined;
       console.log('🎨 CanvasStage: Live transform for', rect.id, ':', liveTransform);
       
       // Skip if:
@@ -129,7 +132,10 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
       onWheel={handleWheel}
       onMouseDown={handleMouseDown}
       onMouseUp={handleMouseUp}
-      onMouseMove={handleMouseMove}
+      onMouseMove={(e) => {
+        handleMouseMove(e);
+        handleCanvasMouseMove();
+      }}
       onMouseLeave={handleMouseLeave}
       onDragEnd={handleDragEnd}
       onClick={handleStageClick}
@@ -186,6 +192,8 @@ export const CanvasStage: React.FC<CanvasStageProps> = ({ width, height, current
             onTransformEnd={handleTransformEnd}
           />
         )}
+        
+        <DragSelection />
       </Layer>
       
       <CursorLayer currentUserId={currentUserId} />

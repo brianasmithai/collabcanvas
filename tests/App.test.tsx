@@ -16,10 +16,65 @@ vi.mock('firebase/auth', () => ({
   getAuth: vi.fn(() => ({})),
 }));
 
+// Mock Firestore functions
+vi.mock('firebase/firestore', () => ({
+  collection: vi.fn(() => ({
+    withConverter: vi.fn(() => ({
+      onSnapshot: vi.fn(() => () => {}),
+      add: vi.fn(),
+      doc: vi.fn(() => ({
+        set: vi.fn(),
+        update: vi.fn(),
+        delete: vi.fn(),
+      })),
+    })),
+  })),
+  doc: vi.fn(() => ({
+    set: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn(),
+  })),
+  addDoc: vi.fn(),
+  updateDoc: vi.fn(),
+  deleteDoc: vi.fn(),
+  onSnapshot: vi.fn(() => () => {}),
+  query: vi.fn((collection, ...queries) => ({
+    onSnapshot: vi.fn(() => () => {}),
+  })),
+  orderBy: vi.fn(() => ({})),
+  where: vi.fn(() => ({})),
+  limit: vi.fn(() => ({})),
+}));
+
+// Mock RTDB functions
+vi.mock('firebase/database', () => ({
+  ref: vi.fn(() => ({
+    set: vi.fn(),
+    update: vi.fn(),
+    remove: vi.fn(),
+  })),
+  onValue: vi.fn(() => () => {}),
+  off: vi.fn(),
+  push: vi.fn(() => ({ key: 'mock-key' })),
+  get: vi.fn(() => Promise.resolve({ val: () => null })),
+}));
+
 // Mock Firebase config
 vi.mock('../src/config/firebaseClient', () => ({
   auth: {},
-  firestore: {},
+  firestore: {
+    collection: vi.fn(() => ({
+      withConverter: vi.fn(() => ({
+        onSnapshot: vi.fn(() => () => {}),
+        add: vi.fn(),
+        doc: vi.fn(() => ({
+          set: vi.fn(),
+          update: vi.fn(),
+          delete: vi.fn(),
+        })),
+      })),
+    })),
+  },
   rtdb: {},
 }));
 
